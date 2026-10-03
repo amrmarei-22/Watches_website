@@ -16,6 +16,14 @@ The following Arabic strings were written during authentication implementation a
 - `auth.checkEmail`
 - `pages.adminLogin`
 
+## Account task 8
+
+The following Arabic strings need owner review:
+
+- `account.*`
+- `messages.ACCOUNT_SAVED`
+- `messages.PASSWORD_CHANGED`
+
 ## Catalog task 5
 
 The following proposed hero copy needs owner review:
