@@ -58,6 +58,20 @@
     "resendLink": "Resend link",
     "reload": "Reload"
   },
+  "auth": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgot": "Forgot password?",
+    "register": "Register",
+    "submitLogin": "Log in",
+    "submitRegister": "Create account",
+    "submitForgot": "Send reset link",
+    "submitReset": "Update password",
+    "checkEmail": "Check your email for a verification link."
+  },
   "validation": {
     "required": "{{field}} is required.",
     "email": "Enter a valid email address.",
@@ -141,5 +155,72 @@
       "women": "Women",
       "unisex": "Unisex"
     }
+  },
+  "catalog": {
+    "search": "Search watches",
+    "filters": "Filters",
+    "brand": "Brand",
+    "gender": "Gender",
+    "movement": "Movement",
+    "material": "Material",
+    "priceRange": "Price range",
+    "minimum": "Minimum (EGP)",
+    "maximum": "Maximum (EGP)",
+    "inStockOnly": "In stock only",
+    "sort": "Sort",
+    "newest": "Newest",
+    "priceAsc": "Price: low to high",
+    "priceDesc": "Price: high to low",
+    "name": "Name A–Z",
+    "resultCount": "{{count}} watches",
+    "pagination": "Pagination",
+    "caseSize": "Case size",
+    "waterResistance": "Water resistance",
+    "quantity": "Quantity",
+    "addToCart": "Add to cart"
+  },
+  "home": {
+    "featured": "Featured watches",
+    "brands": "Explore brands",
+    "heroHeadline": "Time, refined.",
+    "heroSubtitle": "A considered collection of watches for every moment."
+  },
+  "nav": {
+      "main": "Main navigation",
+      "footer": "Footer navigation",
+      "shop": "Shop",
+      "login": "Login",
+      "adminLogin": "Admin login",
+      "logout": "Logout",
+      "languageArabic": "العربية",
+      "languageEnglish": "English",
+      "switchLanguage": "Switch language to {{language}}",
+      "account": "Account",
+      "cart": "Cart",
+    "menu": "Menu"
+  },
+  "pages": {
+      "home": "Home",
+      "listing": "Watches",
+      "productDetails": "Product Details",
+      "cart": "Cart",
+      "login": "Login",
+      "register": "Register",
+      "verifyEmail": "Verify Email",
+      "forgotPassword": "Forgot Password",
+      "resetPassword": "Reset Password",
+      "checkout": "Checkout",
+      "confirmation": "Order Confirmation",
+      "orders": "My Orders",
+      "orderDetails": "Order Details",
+      "account": "My Account",
+      "forbidden": "Access denied",
+      "notFound": "Page not found",
+      "serverError": "Something went wrong"
+  },
+  "ui": {
+      "loading": "Loading",
+      "dismiss": "Dismiss",
+      "close": "Close"
   }
 }

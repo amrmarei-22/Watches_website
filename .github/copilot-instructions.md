@@ -40,7 +40,8 @@ You are implementing a product that is **already specified**. You do not design 
 ## 3. Required behavior for every feature you build
 - Implement ALL states in `UI_STATES.md`: loading, empty, error, success, disabled. A screen without them is incomplete.
 - Use the exact user-facing messages from `docs/i18n/*.json` (copied to `src/locales/`). Do not rephrase or invent messages.
-- **No hard-coded strings.** Every label/message is an i18n key present in BOTH `ar.json` and `en.json`. Layout uses CSS logical properties (RTL-safe). New Arabic text must be flagged "needs owner review".
+- **No hard-coded strings.** Every label/message is an i18n key present in BOTH `ar.json` and `en.json`. Layout uses CSS logical properties (RTL-safe). New Arabic text must be tracked in `src/locales/NEEDS_REVIEW.md`.
+- Never put review markers, TODOs or notes inside user-facing strings; log them in `src/locales/NEEDS_REVIEW.md`.
 - Validate on client AND server using the same schema (shared validation module).
 - Accessibility: keyboard navigable, visible focus, labels on inputs, `aria-live` for errors, alt text on images.
 - No silent failures: every failed request shows the defined error state.

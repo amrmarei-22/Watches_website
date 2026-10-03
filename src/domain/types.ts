@@ -36,18 +36,27 @@ export interface ProductSpecs {
 export interface Product {
   id: string
   sku: string
-  name: string
+  nameAr: string
+  nameEn: string
   brand: string
-  description: string
+  descriptionAr: string
+  descriptionEn: string
   price: number
   stock: number
   lowStockThresholdOverride: number | null
   status: ProductStatus
   featured: boolean
-  images: string[]
+  images: ProductImage[]
   specs: ProductSpecs
   createdAt: string
   updatedAt: string
+}
+
+export interface ProductImage {
+  id: string
+  path: string
+  position: number
+  isPrimary: boolean
 }
 
 export interface User {

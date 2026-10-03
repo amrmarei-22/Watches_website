@@ -8,7 +8,7 @@ const currencyLabels: Record<i18nLanguage, string> = {
 export function formatMoney(minorUnits: number, language: i18nLanguage): string {
   const amount = minorUnits / 100
   const formatted = new Intl.NumberFormat(language, {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
     numberingSystem: 'latn',
   }).format(amount)

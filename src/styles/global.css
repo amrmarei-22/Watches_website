@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--text); }
+body { margin: 0; min-width: 320px; font-family: var(--font-body); line-height: 1.6; }
+button, input { font: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.container { width: min(100% - 2rem, var(--container)); margin-inline: auto; }
+.page-heading { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 600; margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.auth-page { padding-block: 4rem; }
+.auth-card { width: min(100%, 32rem); margin-inline: auto; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
+.auth-card form { display: grid; gap: 1rem; margin-block-start: 2rem; }
+.form-alert, .form-success { padding: .75rem 1rem; border-radius: 4px; }
+.form-alert { color: var(--danger); border: 1px solid var(--danger); }
+.form-success { color: var(--success); border: 1px solid var(--success); }
+.auth-loading { padding-block: 4rem; text-align: center; }

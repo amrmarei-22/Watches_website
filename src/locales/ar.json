@@ -58,6 +58,20 @@
     "resendLink": "إعادة إرسال الرابط",
     "reload": "إعادة التحميل"
   },
+  "auth": {
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "forgot": "نسيت كلمة المرور؟",
+    "register": "إنشاء حساب",
+    "submitLogin": "تسجيل الدخول",
+    "submitRegister": "إنشاء حساب",
+    "submitForgot": "إرسال رابط إعادة التعيين",
+    "submitReset": "تحديث كلمة المرور",
+    "checkEmail": "تحقق من بريدك الإلكتروني للحصول على رابط التأكيد."
+  },
   "validation": {
     "required": "{{field}} مطلوب.",
     "email": "أدخل بريدًا إلكترونيًا صحيحًا.",
@@ -141,5 +155,72 @@
       "women": "حريمي",
       "unisex": "للجنسين"
     }
+  },
+  "catalog": {
+    "search": "ابحث عن ساعة",
+    "filters": "التصفية",
+    "brand": "العلامة التجارية",
+    "gender": "النوع",
+    "movement": "الحركة",
+    "material": "الخامة",
+    "priceRange": "نطاق السعر",
+    "minimum": "الحد الأدنى (ج.م)",
+    "maximum": "الحد الأقصى (ج.م)",
+    "inStockOnly": "المتوفر فقط",
+    "sort": "ترتيب",
+    "newest": "الأحدث",
+    "priceAsc": "السعر: من الأقل إلى الأعلى",
+    "priceDesc": "السعر: من الأعلى إلى الأقل",
+    "name": "الاسم أبجديًا",
+    "resultCount": "{{count}} ساعة",
+    "pagination": "التنقل بين الصفحات",
+    "caseSize": "حجم الهيكل",
+    "waterResistance": "مقاومة الماء",
+    "quantity": "الكمية",
+    "addToCart": "أضف إلى السلة"
+  },
+  "home": {
+    "featured": "ساعات مميزة",
+    "brands": "استكشف العلامات التجارية",
+    "heroHeadline": "الوقت، بإتقان.",
+    "heroSubtitle": "مجموعة مختارة بعناية من الساعات لكل لحظة."
+  },
+  "nav": {
+      "main": "التنقل الرئيسي",
+      "footer": "تنقل التذييل",
+      "shop": "المتجر",
+      "login": "تسجيل الدخول",
+      "adminLogin": "تسجيل دخول المسؤول",
+      "logout": "تسجيل الخروج",
+      "languageArabic": "العربية",
+      "languageEnglish": "English",
+      "switchLanguage": "تغيير اللغة إلى {{language}}",
+      "account": "الحساب",
+      "cart": "السلة",
+    "menu": "القائمة"
+  },
+  "pages": {
+      "home": "الرئيسية",
+      "listing": "الساعات",
+      "productDetails": "تفاصيل المنتج",
+      "cart": "السلة",
+      "login": "تسجيل الدخول",
+      "register": "إنشاء حساب",
+      "verifyEmail": "تأكيد البريد الإلكتروني",
+      "forgotPassword": "نسيت كلمة المرور",
+      "resetPassword": "إعادة تعيين كلمة المرور",
+      "checkout": "إتمام الطلب",
+      "confirmation": "تأكيد الطلب",
+      "orders": "طلباتي",
+      "orderDetails": "تفاصيل الطلب",
+      "account": "حسابي",
+      "forbidden": "الوصول مرفوض",
+      "notFound": "الصفحة غير موجودة",
+      "serverError": "حدث خطأ ما"
+  },
+  "ui": {
+      "loading": "جار التحميل",
+      "dismiss": "إغلاق",
+      "close": "إغلاق"
   }
 }
