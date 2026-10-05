@@ -27,6 +27,10 @@
   --font-arabic-display: Amiri, serif;
   --font-arabic-body: 'IBM Plex Sans Arabic', Tahoma, sans-serif;
   --container: 80rem;
+  --section-y: 96px;
+  --heading-gap: 32px;
+  --nav-gap: 2rem;
+  --utility-gap: 1rem;
 
 }
 
@@ -64,4 +68,8 @@
 html[lang='ar'] {
   --font-display: var(--font-arabic-display);
   --font-body: var(--font-arabic-body);
+}
+
+@media (max-width: 40rem) {
+  :root { --section-y: 64px; }
 }

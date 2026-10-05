@@ -61,6 +61,8 @@
     "reload": "Reload"
   },
   "auth": {
+    "login": { "title": "Login" },
+    "adminLogin": { "title": "Admin login" },
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
@@ -185,7 +187,21 @@
     "featured": "Featured watches",
     "brands": "Explore brands",
     "heroHeadline": "Time, refined.",
-    "heroSubtitle": "A considered collection of watches for every moment."
+    "heroSubtitle": "A considered collection of watches for every moment.",
+    "shopByGender": "Shop by gender",
+    "newArrivals": "New arrivals",
+    "ourBrands": "Our brands",
+    "cod": "Cash on delivery",
+    "delivery": "Delivery to all governorates of Egypt",
+    "sceneCounter": "{{current}} / {{total}}",
+    "heroVisualAlt": "Vintage watch dial"
+  },
+  "cta": {
+    "shopWatches": "Shop watches",
+    "viewAll": "View all",
+    "viewWatch": "View watch",
+    "previous": "Previous",
+    "next": "Next"
   },
   "cart": {
       "checkout": "Checkout",
@@ -197,6 +213,7 @@
   "nav": {
       "main": "Main navigation",
       "footer": "Footer navigation",
+      "home": "Home",
       "shop": "Shop",
       "login": "Login",
       "adminLogin": "Admin login",
@@ -207,6 +224,22 @@
       "account": "Account",
       "cart": "Cart",
     "menu": "Menu"
+  },
+  "footer": {
+    "shop": "Shop",
+    "account": "Your account",
+    "help": "Help",
+    "contact": "Contact us",
+    "shipping": "Shipping & delivery",
+    "privacy": "Privacy policy",
+    "terms": "Terms & conditions",
+    "rights": "All rights reserved",
+    "whatsapp": "WhatsApp",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Working hours",
+    "instagram": "Instagram",
+    "facebook": "Facebook"
   },
   "pages": {
       "home": "Home",
@@ -223,9 +256,15 @@
       "orders": "My Orders",
       "orderDetails": "Order Details",
       "account": "My Account",
+      "adminLogin": "Admin login",
       "forbidden": "Access denied",
       "notFound": "Page not found",
-      "serverError": "Something went wrong"
+      "serverError": "Something went wrong",
+      "contact": { "title": "Contact us" },
+      "shipping": { "title": "Shipping & delivery" },
+      "privacy": { "title": "Privacy policy" },
+      "terms": { "title": "Terms & conditions" },
+      "contentPending": "This page's content is being prepared."
   },
   "account": {
     "profile": "Profile",
@@ -243,6 +282,9 @@
     "deleteConfirm": "Delete address?",
     "deleteWarning": "This address will be removed from your account. Past orders are not affected.",
     "cancel": "Cancel",
+    "reload": "Reload",
+    "backToProducts": "Back to products",
+    "unsavedConfirm": "You have unsaved changes. Leave this page?",
     "currentPassword": "Current password",
     "changePassword": "Change password"
   },
@@ -355,12 +397,21 @@
     "submitting": "Saving",
     "image": "Image",
     "name": "Name",
+    "email": "Email",
     "sku": "SKU",
     "price": "Price",
     "stock": "Stock",
     "threshold": "Threshold",
     "featured": "Featured",
     "images": "Images",
+    "ofEight": "of 8",
+    "primary": "Primary",
+    "chooseImages": "Choose images",
+    "moveEarlier": "Move earlier",
+    "moveLater": "Move later",
+    "setPrimary": "Set primary",
+    "remove": "Remove",
+    "removeImageConfirm": "Remove this image?",
     "updateStock": "Update stock",
     "setExact": "Set exact",
     "adjust": "Adjust +/-",
@@ -402,5 +453,46 @@
       "loading": "Loading",
       "dismiss": "Dismiss",
       "close": "Close"
+  },
+  "chrome": {
+    "nav": {
+      "home": "Home",
+      "shop": "Shop"
+    },
+    "cta": {
+      "shopWatches": "Shop watches",
+      "viewAll": "View all",
+      "viewWatch": "View watch",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "home": {
+      "shopByGender": "Shop by gender",
+      "newArrivals": "New arrivals",
+      "ourBrands": "Our brands",
+      "featured": "Featured watches",
+      "cod": "Cash on delivery",
+      "delivery": "Delivery to all governorates of Egypt",
+      "sceneCounter": "{{current}} / {{total}}"
+    },
+    "footer": {
+      "shop": "Shop",
+      "allWatches": "All watches",
+      "account": "Your account",
+      "help": "Help",
+      "contact": "Contact us",
+      "shipping": "Shipping & delivery",
+      "privacy": "Privacy policy",
+      "terms": "Terms & conditions",
+      "rights": "All rights reserved",
+      "language": "Language"
+    },
+    "pages": {
+      "contact": { "title": "Contact us" },
+      "shipping": { "title": "Shipping & delivery" },
+      "privacy": { "title": "Privacy policy" },
+      "terms": { "title": "Terms & conditions" },
+      "contentPending": "This page's content is being prepared."
+    }
   }
 }

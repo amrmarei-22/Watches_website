@@ -9,6 +9,10 @@ export type i18nLanguage = (typeof supportedLanguages)[number]
 const languageStorageKey = 'vintage-language'
 const defaultLanguage: i18nLanguage = 'ar'
 
+function getFallbackLanguage(language: string): i18nLanguage {
+  return language === 'ar' ? 'en' : 'ar'
+}
+
 function isSupportedLanguage(value: string | null): value is i18nLanguage {
   return value !== null && supportedLanguages.includes(value as i18nLanguage)
 }
@@ -36,7 +40,14 @@ void i18n
       en: { translation: en },
     },
     lng: getInitialLanguage(),
-    fallbackLng: 'en',
+    fallbackLng: getFallbackLanguage,
+    parseMissingKeyHandler: (key) => {
+      if (import.meta.env.DEV) {
+        console.error(`[i18n] Missing translation key: ${key}`)
+        return key
+      }
+      return ''
+    },
     interpolation: {
       escapeValue: false,
     },

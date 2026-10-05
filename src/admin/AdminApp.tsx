@@ -10,6 +10,7 @@ import { productSchema } from '../domain/schemas'
 import { LOW_STOCK_THRESHOLD_DEFAULT, MAX_IMAGES_PER_PRODUCT, MAX_IMAGE_MB } from '../config/businessConfig'
 import type { Availability, ProductStatus } from '../domain/types'
 import { Dashboard as OperationsDashboard, Orders as AdminOrders, OrderDetails, Users as AdminUsers, UserDetails, AuditTrail } from './AdminOperations'
+import { ProductEditPage } from './ProductEditPage'
 
 type ProductRow = {
   id: string; sku: string; name_ar: string; name_en: string; brand: string; description_ar: string; description_en: string
@@ -76,6 +77,6 @@ function Inventory() {
 export function AdminApp() {
   return <Routes><Route element={<AdminLayout />}><Route index element={<OperationsDashboard />} /><Route path="products" element={<Products />} /><Route path="products/new" element={<ProductForm />} /><Route path="products/:id" element={<ProductFormRoute />} /><Route path="inventory" element={<Inventory />} /><Route path="orders" element={<AdminOrders />} /><Route path="orders/:id" element={<OrderDetailsRoute />} /><Route path="users" element={<AdminUsers />} /><Route path="users/:id" element={<UserDetailsRoute />} /><Route path="audit" element={<AuditTrail />} /></Route></Routes>
 }
-function ProductFormRoute() { const location = useLocation(); const id = location.pathname.match(/products\/([^/]+)/)?.[1]; return <ProductForm id={id} /> }
+function ProductFormRoute() { const location = useLocation(); const id = location.pathname.match(/products\/([^/]+)/)?.[1]; return id ? <ProductEditPage id={id} /> : null }
 function OrderDetailsRoute() { const location = useLocation(); const id = location.pathname.match(/orders\/([^/]+)/)?.[1]; return id ? <OrderDetails id={id} /> : null }
 function UserDetailsRoute() { const location = useLocation(); const id = location.pathname.match(/users\/([^/]+)/)?.[1]; return id ? <UserDetails id={id} /> : null }

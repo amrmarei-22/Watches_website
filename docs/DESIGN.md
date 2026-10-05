@@ -69,6 +69,19 @@ Rules for all animation:
 | Checkout steps | Progress bar fill, step content crossfade |
 | Toasts | Slide in from the end edge, auto-dismiss 4s |
 | Header | Background/blur transition on scroll past 24px |
+
+### Motion v2 additions (approved by owner; same rules as above)
+| Place | Effect |
+|-------|--------|
+| Hero visual | The watch dial's hands settle to the current local time on load (rotate transform, 900 ms), then a slow second hand sweep (CSS, paused under reduced motion). Subtle parallax on scroll (desktop) |
+| Section headings | A thin accent line draws in (scaleX, 600 ms) and the heading text rises with a mask reveal when it enters the viewport |
+| Shop-by-gender tiles | Image parallax inside its mask (±24px) plus slow zoom on hover; arrow icon slides toward the end edge on hover (direction-aware) |
+| New arrivals / listing | Cards stagger in per visible batch; on hover the second image crossfades and a "View" label fades up |
+| Header | 2px accent scroll-progress bar (scaleX); background/blur transition after 24px |
+| Footer | Columns reveal with a short stagger the first time the footer enters the viewport |
+| Buttons (primary) | A soft light sweep across the button on hover (transform only), none on touch devices |
+Never animate: prices, form fields, error/empty states, admin screens.
+
 No other animation without owner approval.
 
 ## 6. Imagery
@@ -96,3 +109,22 @@ LCP < 2.5s on mid-range mobile; hero image preloaded, responsive `srcset`; code-
 - Header lockup: mark (32px) + wordmark in the display font (Cormorant Garamond for EN / Amiri for AR), uppercase letter-spacing .18em for EN only, accent color for the mark, `--text` for the wordmark.
 - Tagline: none until the owner provides one (do not invent).
 - Placeholder watches: `public/placeholders/watch-1..6.svg` (4:5, marked SAMPLE). Replaced by real photos later; code must treat any image path starting with `/` as a local asset (see API.md §2).
+
+## 10. Hero dial (no-photo hero) and featured showcase layout (added after visual review)
+
+### 10.1 `<HeroDial />` (SVG component, decorative)
+Used as the hero visual when there is no real product photo (rule: if the first featured product's primary image path starts with `/placeholders/`, or there is no featured product, render `HeroDial`; otherwise render the photo).
+- Size `min(80vw, 560px)`, square, `aria-hidden="true"` (the headline carries the meaning).
+- Layers, back to front: soft gold glow (blurred circle, 15% opacity) → bezel (conic/linear gold gradient, 3 rings) → dial face (radial gradient charcoal → near-black) with faint concentric "guilloché" circles (opacity ≤ 0.06) → 60 minute ticks + 12 gold baton hour markers → small wordmark "VINTAGE" above center (Cormorant, letter-spaced) and tiny "AUTOMATIC" below → crown at 3 o'clock.
+- Hands: hour and minute hands (baton with a lighter inner strip), thin gold seconds hand with counterweight, center cap.
+- Motion (see §5, reduced-motion rules apply): on load the hour/minute hands sweep from 12:00 to the visitor's current local time (900–1200 ms, ease-out); the seconds hand then sweeps continuously (CSS rotation, 60 s linear, `steps` not required); on pointer devices a subtle tilt/parallax (±4°) follows the cursor. Under reduced motion: static hands at the current time, no sweep, no tilt.
+- Colors only from design tokens; works in light and dark.
+
+### 10.2 Featured showcase scene (desktop pinned)
+- One scene = one featured product. Layout: image panel ≥ 45% of the width (large), text panel: brand (small caps), name (serif, large), price, up to three spec chips (movement, material, case size, labels from locale files), and a primary CTA button `cta.viewWatch` linking to the product page. **Never repeat the product name as link text next to the price.**
+- Scene counter `01 / 04`, previous/next buttons and dots. They are real buttons, keyboard operable, and move to the matching scroll position; the scene never traps focus and every product is reachable by Tab.
+- Pinning: the pinned section is exactly one viewport tall; when the last scene ends the next section follows immediately (**no dead space below**). Verify at 1366×768 and 1920×1080.
+- Below 1024px or under reduced motion: stacked list of the same cards, simple reveals.
+
+### 10.3 Section rhythm
+Tokens: `--section-y: 96px` (desktop) / `64px` (mobile); `--heading-gap: 32px` between a section heading and its content; a short accent line (40px) under each heading. Headings and their content must never touch.

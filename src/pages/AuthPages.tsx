@@ -53,7 +53,7 @@ export function LoginPage({ admin = false }: { admin?: boolean }) {
     }
     await refresh(); navigate(returnTo, { replace: true })
   }
-  return <AuthShell title={t('pages.adminLogin', { defaultValue: t('pages.login') })}><form onSubmit={submit} noValidate>
+  return <AuthShell title={t(admin ? 'auth.adminLogin.title' : 'auth.login.title')}><form onSubmit={submit} noValidate>
     <FormError code={error} />
     <Input id="login-email" label={t('auth.email')} type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldErrors.email && t(fieldErrors.email)} />
     <Input id="login-password" label={t('auth.password')} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={fieldErrors.password && t(fieldErrors.password)} />

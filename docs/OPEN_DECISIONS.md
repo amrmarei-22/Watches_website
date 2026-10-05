@@ -36,3 +36,8 @@ Rule for Copilot: when a task touches a **[BLOCKER]** row, ask the owner. When i
 | 28 | Brand name & logo | [DEFAULT] | Working name **Vintage / فينتج** with the V-hands logo in `public/brand/`. Owner may rename at any time: change `src/config/brand.ts` (single source). |
 | 29 | Hosting for frontend (Vercel / Netlify / Cloudflare Pages) | OPEN | Owner choice; no code impact. |
 | 30 | Supabase project & keys | **[OWNER ACTION]** | Owner creates the project and fills `.env.local` (see `supabase/README.md`). Copilot must not invent keys. |
+| 30 | Contact details (WhatsApp, phone, email, hours, Instagram/Facebook) | **[OWNER INPUT]** | Empty in `businessConfig.contact`; UI hides empty items. Needed before launch. |
+| 31 | Brand tagline and hero headline/subtitle | **[OWNER INPUT]** | Proposals in NEEDS_REVIEW.md until confirmed. |
+| 32 | Promises to show (original guarantee, warranty, exchange policy, delivery time) | **[OWNER INPUT]** | None shown. Only owner-confirmed facts may appear. |
+| 33 | Legal text (privacy, terms, shipping policy) | **[OWNER INPUT]** | Owner supplies; any drafted text must be reviewed by a qualified person before launch. |
+| 34 | Order notification to the admin (email/WhatsApp) | OPEN | Not built. Needed operationally (COD orders need a phone call). |

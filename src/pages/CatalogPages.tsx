@@ -14,6 +14,15 @@ import { getProductImageUrl } from '../features/catalog/imageUrl'
 import { emptyCatalogFilters, filterAndSearchProducts, getAvailabilityLabel, paginateProducts, sortProducts, type CatalogFilters, type CatalogSort } from '../features/catalog/catalogLogic'
 import { PAGE_SIZE } from '../config/businessConfig'
 import type { i18nLanguage } from '../lib/i18n'
+import { useReveal } from '../motion/useReveal'
+import { useDirection } from '../motion/useDirection'
+import { useReducedMotion } from '../motion/useReducedMotion'
+import { stagger } from '../motion/presets'
+import { lazy, Suspense } from 'react'
+import { getBrands, getFeaturedProducts, getLatestProductByGender, getNewArrivals, homeGenders } from '../features/catalog/homeLogic'
+import { HeroDial } from '../components/HeroDial'
+
+const HomeFeaturedMotion = lazy(() => import('../motion/HomeFeaturedMotion').then((module) => ({ default: module.HomeFeaturedMotion })))
 
 function usePageTitle(title: string) {
   useEffect(() => { document.title = title }, [title])
@@ -37,8 +46,9 @@ export function ProductCard({ product }: { product: Product }) {
   const { i18n, t } = useTranslation()
   const lang = i18n.language as i18nLanguage
   const name = lang === 'ar' ? product.nameAr : product.nameEn
-  return <Link className="product-card" to={`/${lang}/products/${product.id}`}>
-    <div className="product-card-image"><ProductImage product={product} index={0} /><AvailabilityBadge product={product} /></div>
+  const reveal = useReveal<HTMLAnchorElement>()
+  return <Link ref={reveal} className="product-card motion-reveal" style={stagger(0)} to={`/${lang}/products/${product.id}`}>
+    <div className="product-card-image"><ProductImage product={product} index={0} /><ProductImage product={product} index={1} /><AvailabilityBadge product={product} /></div>
     <div className="product-card-copy"><span className="product-brand">{product.brand}</span><h2>{name}</h2><strong>{formatMoney(product.price, lang)}</strong><span className="sr-only">{t('pages.productDetails')}</span></div>
   </Link>
 }
@@ -92,7 +102,7 @@ export function ListingPage() {
   const clear = () => setParams(new URLSearchParams({ page: '1' }))
   if (isLoading) return <section className="container catalog-page"><Skeleton className="listing-skeleton" /><Skeleton className="listing-skeleton" /></section>
   if (isError || !data) return <ErrorState message={t('messages.LISTING_ERROR')} action={t('actions.tryAgain')} onAction={() => void refetch()} />
-  return <section className="container catalog-page">
+  return <section className="container catalog-page" key={`${query}-${sort}-${page}-${JSON.stringify(filters)}`}>
     <div className="catalog-header"><div><h1 className="page-heading">{t('pages.listing')}</h1><p>{t('catalog.resultCount', { count: filtered.length })}</p></div><button className="filter-drawer-button" onClick={() => setMobileFiltersOpen(true)}>{t('catalog.filters')}</button></div>
     <div className="catalog-toolbar"><label className="search-field"><span className="sr-only">{t('catalog.search')}</span><input value={query} onChange={(event) => setParams(updateParams(new URLSearchParams(params), { q: event.target.value }))} placeholder={t('catalog.search')} /></label><label>{t('catalog.sort')}<select value={sort} onChange={(event) => setParams(updateParams(new URLSearchParams(params), { sort: event.target.value }))}><option value="newest">{t('catalog.newest')}</option><option value="price-asc">{t('catalog.priceAsc')}</option><option value="price-desc">{t('catalog.priceDesc')}</option><option value="name">{t('catalog.name')}</option></select></label></div>
     <div className="catalog-layout"><aside><FilterControls products={data} filters={filters} onChange={setFilters} /></aside><div className="catalog-results">
@@ -123,21 +133,37 @@ export function ProductPage() {
   const name = lang === 'ar' ? product.nameAr : product.nameEn
   const description = lang === 'ar' ? product.descriptionAr || product.descriptionEn : product.descriptionEn || product.descriptionAr
   const add = async () => { try { await addItem(product, quantity); setAdded(true) } catch { setAdded(false) } }
-  return <section className="container product-page"><div className="product-gallery">{product.images.map((image, index) => <img key={image.id} src={getProductImageUrl(image.path)} width="800" height="1000" loading={index === 0 ? 'eager' : 'lazy'} alt={name} />)}</div><div className="product-info"><span className="product-brand">{product.brand}</span><h1 className="page-heading">{name}</h1><strong className="product-price">{formatMoney(product.price, lang)}</strong><AvailabilityBadge product={product} /><dl className="product-specs">{Object.entries(product.specs).map(([key, value]) => <div key={key}><dt>{key === 'caseSize' ? t('catalog.caseSize') : key === 'waterResistance' ? t('catalog.waterResistance') : t(`specs.${key}.${value}`)}</dt><dd>{key === 'caseSize' ? `${value} mm` : key === 'waterResistance' ? `${value} m` : t(`specs.${key}.${value}`)}</dd></div>)}</dl><p>{description}</p><label className="quantity-control">{t('catalog.quantity')}<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0}>{Array.from({ length: availableToAdd }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button>{added && <p className="sr-only" aria-live="polite">{t('messages.CART_ADDED')}</p>}</div><div className="mobile-add-bar"><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button></div></section>
+  return <section className="container product-page"><div className="product-gallery">{product.images.map((image, index) => <img key={image.id} src={getProductImageUrl(image.path)} width="800" height="1000" loading={index === 0 ? 'eager' : 'lazy'} alt={name} />)}</div><div className="product-info motion-reveal"><span className="product-brand">{product.brand}</span><h1 className="page-heading">{name}</h1><strong className="product-price">{formatMoney(product.price, lang)}</strong><AvailabilityBadge product={product} /><dl className="product-specs">{Object.entries(product.specs).map(([key, value]) => <div key={key}><dt>{key === 'caseSize' ? t('catalog.caseSize') : key === 'waterResistance' ? t('catalog.waterResistance') : t(`specs.${key}.${value}`)}</dt><dd>{key === 'caseSize' ? `${value} mm` : key === 'waterResistance' ? `${value} m` : t(`specs.${key}.${value}`)}</dd></div>)}</dl><p>{description}</p><label className="quantity-control">{t('catalog.quantity')}<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0}>{Array.from({ length: availableToAdd }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button>{added && <p className="sr-only" aria-live="polite">{t('messages.CART_ADDED')}</p>}</div><div className="mobile-add-bar"><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button></div></section>
 }
 
 export function HomePage() {
   const { t, i18n } = useTranslation()
   const { data, isLoading, isError, refetch } = useCatalogProducts()
   const lang = i18n.language as i18nLanguage
+  const direction = useDirection()
+  const reduced = useReducedMotion()
   usePageTitle(t('pages.home'))
+  useEffect(() => {
+    const image = data?.find((product) => product.featured)?.images[0]
+    if (!image) return
+    const preload = document.createElement('link')
+    preload.rel = 'preload'; preload.as = 'image'; preload.href = getProductImageUrl(image.path)
+    document.head.appendChild(preload)
+    return () => preload.remove()
+  }, [data])
   if (isLoading) return <section className="container home-page"><Skeleton className="home-skeleton" /></section>
   if (isError || !data) return <ErrorState message={t('messages.LISTING_ERROR')} action={t('actions.tryAgain')} onAction={() => void refetch()} />
-  const featured = data.filter((product) => product.featured)
-  const brands = [...new Set(data.map((product) => product.brand))].sort()
+  const featured = getFeaturedProducts(data)
+  const heroPath = featured[0]?.images[0]?.path
+  const newArrivals = getNewArrivals(data)
+  const brands = getBrands(data)
+  const genderTiles = homeGenders.map((gender) => ({ gender, product: getLatestProductByGender(data, gender) })).filter((item): item is { gender: typeof item.gender; product: Product } => item.product !== undefined)
+  const heroVisual = !heroPath || heroPath.startsWith('/placeholders/') ? <HeroDial /> : <img className="home-hero-watch" src={getProductImageUrl(heroPath)} width="800" height="1000" loading="eager" alt={featured[0] ? (lang === 'ar' ? featured[0].nameAr : featured[0].nameEn) : t('home.heroVisualAlt')} />
   return <section className="home-page">
-    <div className="container home-hero"><h1 className="page-heading">{t('home.heroHeadline')}</h1><p>{t('home.heroSubtitle')}</p><Link className="ui-button ui-button-primary" to={`/${lang}/shop`}>{t('nav.shop')}</Link></div>
-    <div className="container home-section"><div className="section-heading"><h2>{t('home.featured')}</h2><Link to={`/${lang}/shop`}>{t('nav.shop')}</Link></div><div className="product-grid">{featured.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>
-    <div className="container home-section"><h2>{t('home.brands')}</h2><div className="brand-links">{brands.map((brand) => <Link key={brand} to={`/${lang}/shop?brand=${encodeURIComponent(brand)}`}>{brand}</Link>)}</div></div>
+    <div className="container home-hero motion-reveal" data-direction={direction} data-reduced={reduced}><div className="hero-copy"><h1 className="page-heading"><span className="hero-headline-mask"><span>{t('home.heroHeadline')}</span></span></h1><p>{t('home.heroSubtitle')}</p><Link className="ui-button ui-button-primary" to={`/${lang}/shop`}>{t('chrome.cta.shopWatches')}</Link></div><div className="hero-visual">{heroVisual}</div></div>
+    {featured.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.featured')}</h2><Link to={`/${lang}/shop`}>{t('chrome.cta.viewAll')}</Link></div><Suspense fallback={<div className="product-grid">{featured.slice(0, 12).map((product) => <ProductCard key={product.id} product={product} />)}</div>}><HomeFeaturedMotion products={featured} /></Suspense></div>}
+    {genderTiles.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.shopByGender')}</h2></div><div className="gender-tiles">{genderTiles.map(({ gender, product }) => <Link className="gender-tile" key={gender} to={`/${lang}/shop?gender=${gender}`}><img src={getProductImageUrl(product.images[0]?.path ?? '')} width="800" height="1000" loading="lazy" alt={t(`specs.gender.${gender}`)} /><span>{t(`specs.gender.${gender}`)}</span></Link>)}</div></div>}
+    {newArrivals.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.newArrivals')}</h2><Link to={`/${lang}/shop`}>{t('chrome.cta.viewAll')}</Link></div><div className="product-grid">{newArrivals.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
+    {brands.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.ourBrands')}</h2></div><div className="brand-links">{brands.map((brandName) => <Link key={brandName} to={`/${lang}/shop?brand=${encodeURIComponent(brandName)}`}>{brandName}</Link>)}</div></div>}
   </section>
 }

@@ -17,12 +17,18 @@ export function mapCheckoutError(error: { message?: string; details?: string } |
     } catch {
       return { kind: 'stockConflict', productIds: [] }
     }
+
   }
   if (code === 'CART_PRICE_CHANGED') return { kind: 'priceChanged' }
   if (code === 'CART_EMPTY') return { kind: 'emptyCart' }
   if (code === 'AUTH_SESSION_EXPIRED') return { kind: 'sessionExpired' }
   if (code === 'AUTH_VERIFY_REQUIRED') return { kind: 'verifyRequired' }
   return { kind: 'error' }
+}
+
+export function checkoutErrorMessage(error: { message?: string } | null): string {
+  const known = ['AUTH_VERIFY_REQUIRED', 'CART_EMPTY', 'CHECKOUT_STOCK_CONFLICT', 'CART_PRICE_CHANGED', 'AUTH_SESSION_EXPIRED']
+  return error?.message && known.includes(error.message) ? error.message : 'CHECKOUT_ERROR'
 }
 
 export function orderTotalPreview(lines: Pick<OrderLine, 'unitPriceSnapshot' | 'quantity'>[], shippingFee: number) {

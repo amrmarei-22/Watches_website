@@ -18,6 +18,7 @@ You are implementing a product that is **already specified**. You do not design 
    - `docs/TECH_STACK.md` — stack, database, RPC, RLS, folder layout, localization rules
    - `docs/DESIGN.md` — colors, typography, layout, motion system
    - `docs/BRAND.md` — name, logo, brand constants
+   - `docs/HOME_AND_CHROME.md` — header order, footer, Home sections, static pages (owner-input rules)
    - `supabase/migrations/*.sql` — the finished database/API (read-only for you; see TECH_STACK §9)
    - `docs/i18n/en.json`, `docs/i18n/ar.json` — all message keys and labels (Arabic + English)
 2. **Never invent behavior.** If something is not in the docs, or is listed in `OPEN_DECISIONS.md` as OPEN, STOP and ASK the owner. Do not guess, do not pick a "reasonable default" silently.
@@ -40,8 +41,7 @@ You are implementing a product that is **already specified**. You do not design 
 ## 3. Required behavior for every feature you build
 - Implement ALL states in `UI_STATES.md`: loading, empty, error, success, disabled. A screen without them is incomplete.
 - Use the exact user-facing messages from `docs/i18n/*.json` (copied to `src/locales/`). Do not rephrase or invent messages.
-- **No hard-coded strings.** Every label/message is an i18n key present in BOTH `ar.json` and `en.json`. Layout uses CSS logical properties (RTL-safe). New Arabic text must be tracked in `src/locales/NEEDS_REVIEW.md`.
-- Never put review markers, TODOs or notes inside user-facing strings; log them in `src/locales/NEEDS_REVIEW.md`.
+- **No hard-coded strings.** Every label/message is an i18n key present in BOTH `ar.json` and `en.json`. Layout uses CSS logical properties (RTL-safe). New Arabic text must be flagged "needs owner review".
 - Validate on client AND server using the same schema (shared validation module).
 - Accessibility: keyboard navigable, visible focus, labels on inputs, `aria-live` for errors, alt text on images.
 - No silent failures: every failed request shows the defined error state.
@@ -76,3 +76,5 @@ You are implementing a product that is **already specified**. You do not design 
 - Business errors arrive as `error.message === CODE` (see API.md §1). Map every code to its i18n key; never display raw error text.
 - Brand name/logo come from `src/config/brand.ts` and `public/brand/`; sample images from `public/placeholders/`.
 - Never put the service_role/secret key anywhere. Frontend env vars are only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+
+- Locale files use nested objects only (no flat dotted keys); every key used in code must exist in BOTH files (a Vitest test enforces it); production must never render a raw key.

@@ -61,6 +61,8 @@
     "reload": "إعادة التحميل"
   },
   "auth": {
+    "login": { "title": "تسجيل الدخول" },
+    "adminLogin": { "title": "تسجيل دخول المسؤول" },
     "name": "الاسم",
     "email": "البريد الإلكتروني",
     "phone": "الهاتف",
@@ -185,7 +187,21 @@
     "featured": "ساعات مميزة",
     "brands": "استكشف العلامات التجارية",
     "heroHeadline": "الوقت، بإتقان.",
-    "heroSubtitle": "مجموعة مختارة بعناية من الساعات لكل لحظة."
+    "heroSubtitle": "مجموعة مختارة بعناية من الساعات لكل لحظة.",
+    "shopByGender": "تسوق حسب النوع",
+    "newArrivals": "وصل حديثًا",
+    "ourBrands": "علاماتنا التجارية",
+    "cod": "الدفع عند الاستلام",
+    "delivery": "التوصيل إلى جميع محافظات مصر",
+    "sceneCounter": "{{current}} / {{total}}",
+    "heroVisualAlt": "قرص ساعة فينتج"
+  },
+  "cta": {
+    "shopWatches": "تسوق الساعات",
+    "viewAll": "عرض الكل",
+    "viewWatch": "عرض الساعة",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "cart": {
       "checkout": "إتمام الطلب",
@@ -197,6 +213,7 @@
   "nav": {
       "main": "التنقل الرئيسي",
       "footer": "تنقل التذييل",
+      "home": "الرئيسية",
       "shop": "المتجر",
       "login": "تسجيل الدخول",
       "adminLogin": "تسجيل دخول المسؤول",
@@ -207,6 +224,22 @@
       "account": "الحساب",
       "cart": "السلة",
     "menu": "القائمة"
+  },
+  "footer": {
+    "shop": "تسوق",
+    "account": "حسابك",
+    "help": "المساعدة",
+    "contact": "تواصل معنا",
+    "shipping": "الشحن والتوصيل",
+    "privacy": "سياسة الخصوصية",
+    "terms": "الشروط والأحكام",
+    "rights": "جميع الحقوق محفوظة",
+    "whatsapp": "واتساب",
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "hours": "ساعات العمل",
+    "instagram": "إنستغرام",
+    "facebook": "فيسبوك"
   },
   "pages": {
       "home": "الرئيسية",
@@ -223,9 +256,15 @@
       "orders": "طلباتي",
       "orderDetails": "تفاصيل الطلب",
       "account": "حسابي",
+      "adminLogin": "تسجيل دخول المسؤول",
       "forbidden": "الوصول مرفوض",
       "notFound": "الصفحة غير موجودة",
-      "serverError": "حدث خطأ ما"
+      "serverError": "حدث خطأ ما",
+      "contact": { "title": "تواصل معنا" },
+      "shipping": { "title": "الشحن والتوصيل" },
+      "privacy": { "title": "سياسة الخصوصية" },
+      "terms": { "title": "الشروط والأحكام" },
+      "contentPending": "يتم إعداد محتوى هذه الصفحة."
   },
   "account": {
     "profile": "الملف الشخصي",
@@ -243,6 +282,9 @@
     "deleteConfirm": "حذف العنوان؟",
     "deleteWarning": "سيُحذف هذا العنوان من حسابك. لن تتأثر الطلبات السابقة.",
     "cancel": "إلغاء",
+    "reload": "إعادة التحميل",
+    "backToProducts": "العودة إلى المنتجات",
+    "unsavedConfirm": "لديك تغييرات غير محفوظة. هل تريد مغادرة الصفحة؟",
     "currentPassword": "كلمة المرور الحالية",
     "changePassword": "تغيير كلمة المرور"
   },
@@ -355,12 +397,21 @@
     "submitting": "جار الحفظ",
     "image": "الصورة",
     "name": "الاسم",
+    "email": "البريد الإلكتروني",
     "sku": "SKU",
     "price": "السعر",
     "stock": "المخزون",
     "threshold": "الحد",
     "featured": "مميز",
     "images": "الصور",
+    "ofEight": "من 8",
+    "primary": "رئيسية",
+    "chooseImages": "اختيار الصور",
+    "moveEarlier": "نقل إلى اليسار",
+    "moveLater": "نقل إلى اليمين",
+    "setPrimary": "تعيين كرئيسية",
+    "remove": "إزالة",
+    "removeImageConfirm": "هل تريد إزالة هذه الصورة؟",
     "updateStock": "تحديث المخزون",
     "setExact": "تعيين قيمة",
     "adjust": "تعديل +/-",
@@ -402,5 +453,46 @@
       "loading": "جار التحميل",
       "dismiss": "إغلاق",
       "close": "إغلاق"
+  },
+  "chrome": {
+    "nav": {
+      "home": "الرئيسية",
+      "shop": "المتجر"
+    },
+    "cta": {
+      "shopWatches": "تسوق الساعات",
+      "viewAll": "عرض الكل",
+      "viewWatch": "عرض الساعة",
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "home": {
+      "shopByGender": "تسوق حسب النوع",
+      "newArrivals": "وصل حديثًا",
+      "ourBrands": "علاماتنا التجارية",
+      "featured": "ساعات مميزة",
+      "cod": "الدفع عند الاستلام",
+      "delivery": "التوصيل إلى جميع محافظات مصر",
+      "sceneCounter": "{{current}} / {{total}}"
+    },
+    "footer": {
+      "shop": "تسوق",
+      "allWatches": "كل الساعات",
+      "account": "حسابك",
+      "help": "المساعدة",
+      "contact": "تواصل معنا",
+      "shipping": "الشحن والتوصيل",
+      "privacy": "سياسة الخصوصية",
+      "terms": "الشروط والأحكام",
+      "rights": "جميع الحقوق محفوظة",
+      "language": "اللغة"
+    },
+    "pages": {
+      "contact": { "title": "تواصل معنا" },
+      "shipping": { "title": "الشحن والتوصيل" },
+      "privacy": { "title": "سياسة الخصوصية" },
+      "terms": { "title": "الشروط والأحكام" },
+      "contentPending": "يتم إعداد محتوى هذه الصفحة."
+    }
   }
 }

@@ -141,5 +141,55 @@
       "women": "حريمي",
       "unisex": "للجنسين"
     }
+  },
+  "chrome": {
+    "nav": {
+      "home": "الرئيسية",
+      "shop": "المتجر"
+    },
+    "cta": {
+      "shopWatches": "تسوّق الساعات",
+      "viewAll": "عرض الكل",
+      "viewWatch": "عرض الساعة",
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "home": {
+      "shopByGender": "تسوّق حسب النوع",
+      "newArrivals": "وصل حديثًا",
+      "ourBrands": "ماركاتنا",
+      "featured": "ساعات مميزة",
+      "trustTitle": "لماذا تتسوق معنا",
+      "cod": "الدفع عند الاستلام",
+      "delivery": "توصيل لجميع محافظات مصر",
+      "sceneCounter": "{{current}} / {{total}}"
+    },
+    "footer": {
+      "shop": "تسوّق",
+      "allWatches": "كل الساعات",
+      "account": "حسابك",
+      "help": "المساعدة",
+      "contact": "تواصل معنا",
+      "shipping": "الشحن والتوصيل",
+      "privacy": "سياسة الخصوصية",
+      "terms": "الشروط والأحكام",
+      "rights": "جميع الحقوق محفوظة",
+      "language": "اللغة"
+    },
+    "pages": {
+      "contact": {
+        "title": "تواصل معنا"
+      },
+      "shipping": {
+        "title": "الشحن والتوصيل"
+      },
+      "privacy": {
+        "title": "سياسة الخصوصية"
+      },
+      "terms": {
+        "title": "الشروط والأحكام"
+      },
+      "contentPending": "محتوى هذه الصفحة قيد الإعداد."
+    }
   }
 }

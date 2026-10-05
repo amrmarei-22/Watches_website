@@ -10,5 +10,7 @@ insert into public.products (sku, name_ar, name_en, brand, description_ar, descr
 ('SAMPLE-007','مانيوال 39 كلاسيك','Manual 39 Classic','Vintage','حركة يدوية للهواة. (عينة)','Hand-wound movement for enthusiasts. (sample)',1540000,1,'ACTIVE',false,'{"caseSize":39,"movement":"manual","material":"stainless_steel","waterResistance":50,"strap":"leather","gender":"men"}'),
 ('SAMPLE-008','ديفر 44 ستانلس','Diver 44 Steel','Vintage','مقاومة للماء حتى 300 متر. (عينة)','Water resistant to 300 m. (sample)',2780000,6,'ACTIVE',false,'{"caseSize":44,"movement":"automatic","material":"stainless_steel","waterResistance":300,"strap":"steel","gender":"men"}');
 
+-- Varied sample images (6 dial styles) so the catalog does not look repetitive during development
 insert into public.product_images (product_id, path, position, is_primary)
-select id, '/placeholders/watch-placeholder.svg', 0, true from public.products where sku like 'SAMPLE-%';
+select p.id, '/placeholders/sample-dial-' || (((substr(p.sku, 8)::int - 1) % 6) + 1) || '.svg', 0, true
+from public.products p where p.sku like 'SAMPLE-%';

@@ -18,7 +18,7 @@ type CartContextValue = {
   addItem: (product: Product, quantity: number) => Promise<void>
   setQuantity: (productId: string, quantity: number) => Promise<void>
   removeItem: (productId: string) => Promise<void>
-  revalidate: () => Promise<CartChange[]>
+  revalidate: (onError?: (error: { message?: string; details?: string }) => void) => Promise<CartChange[]>
   closeDrawer: () => void
 }
 const CartContext = createContext<CartContextValue | null>(null)
@@ -119,10 +119,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (auth.role === 'CUSTOMER') { const result = await supabase.rpc('cart_set_item', { p_product_id: productId, p_quantity: 0 }); if (result.error) throw result.error; await fetchCustomer() }
     else { const next = items.filter((item) => item.product.id !== productId); setItems(next); writeStored(next.map((item) => ({ productId: item.product.id, quantity: item.quantity, price_seen: item.priceSeen }))) }
   }, [auth.role, fetchCustomer, items])
-  const revalidate = useCallback(async () => {
+  const revalidate = useCallback(async (onError?: (error: { message?: string; details?: string }) => void) => {
     if (auth.role === 'CUSTOMER') {
       const result = await supabase.rpc('validate_cart')
-      if (result.error) throw result.error
+      if (result.error) { onError?.(result.error); throw result.error }
       const next = (result.data as { changes?: CartChange[] }).changes ?? []
       setChanges(next); await fetchCustomer(); return next
     }

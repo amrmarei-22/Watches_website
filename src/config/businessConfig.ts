@@ -23,7 +23,19 @@ export const businessConfig = {
   brand: {
     nameEn: 'Vintage',
     nameAr: 'فينتج',
+    taglineEn: '',
+    taglineAr: '',
   },
+  contact: {
+    whatsapp: '',
+    phone: '',
+    email: '',
+    hoursEn: '',
+    hoursAr: '',
+    instagram: '',
+    facebook: '',
+  },
+  promises: [] as { icon: string; textEn: string; textAr: string }[],
 } as const
 
 export const LOW_STOCK_THRESHOLD_DEFAULT =

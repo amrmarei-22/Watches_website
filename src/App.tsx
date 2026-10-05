@@ -9,6 +9,7 @@ import './App.css'
 import { HomePage, ListingPage, ProductPage } from './pages/CatalogPages'
 import { CartPage } from './pages/CartPage'
 import { OrdersPage, OrderDetailsPage } from './pages/OrderPages'
+import { StaticPage } from './pages/StaticPage'
 
 const AdminApp = lazy(() => import('./admin/AdminApp').then((module) => ({ default: module.AdminApp })))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPages').then((module) => ({ default: module.CheckoutPage })))
@@ -49,6 +50,10 @@ function LocalizedRoutes() {
         <Route path="account/orders" element={<RequireAuth />}><Route element={<RequireVerified />}><Route index element={<OrdersPage />} /></Route></Route>
         <Route path="account/orders/:id" element={<RequireAuth />}><Route element={<RequireVerified />}><Route index element={<OrderDetailsPage />} /></Route></Route>
         <Route element={<RequireCustomer />}><Route path="account" element={<Suspense fallback={<LoadingFallback />}><AccountPage /></Suspense>} /></Route>
+        <Route path="contact" element={<StaticPage slug="contact" />} />
+        <Route path="shipping" element={<StaticPage slug="shipping" />} />
+        <Route path="privacy" element={<StaticPage slug="privacy" />} />
+        <Route path="terms" element={<StaticPage slug="terms" />} />
         <Route path="403" element={<PageStub page="forbidden" />} />
         <Route path="500" element={<PageStub page="serverError" />} />
         <Route path="*" element={<PageStub page="notFound" />} />

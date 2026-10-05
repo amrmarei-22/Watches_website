@@ -141,5 +141,55 @@
       "women": "Women",
       "unisex": "Unisex"
     }
+  },
+  "chrome": {
+    "nav": {
+      "home": "Home",
+      "shop": "Shop"
+    },
+    "cta": {
+      "shopWatches": "Shop watches",
+      "viewAll": "View all",
+      "viewWatch": "View watch",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "home": {
+      "shopByGender": "Shop by gender",
+      "newArrivals": "New arrivals",
+      "ourBrands": "Our brands",
+      "featured": "Featured watches",
+      "trustTitle": "Why shop with us",
+      "cod": "Cash on delivery",
+      "delivery": "Delivery to all governorates of Egypt",
+      "sceneCounter": "{{current}} / {{total}}"
+    },
+    "footer": {
+      "shop": "Shop",
+      "allWatches": "All watches",
+      "account": "Your account",
+      "help": "Help",
+      "contact": "Contact us",
+      "shipping": "Shipping & delivery",
+      "privacy": "Privacy policy",
+      "terms": "Terms & conditions",
+      "rights": "All rights reserved",
+      "language": "Language"
+    },
+    "pages": {
+      "contact": {
+        "title": "Contact us"
+      },
+      "shipping": {
+        "title": "Shipping & delivery"
+      },
+      "privacy": {
+        "title": "Privacy policy"
+      },
+      "terms": {
+        "title": "Terms & conditions"
+      },
+      "contentPending": "This page's content is being prepared."
+    }
   }
 }

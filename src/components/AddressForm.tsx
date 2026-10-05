@@ -4,11 +4,11 @@ import { addressSchema, governorateKeys, type AddressInput } from '../domain/sch
 import { Input } from './ui/Input'
 import { Button } from './ui/Button'
 
-export function AddressForm({ initial, onSubmit, submitting = false }: { initial?: Partial<AddressInput>; onSubmit: (value: AddressInput) => void; submitting?: boolean }) {
+export function AddressForm({ initial, onSubmit, onInteraction, submitting = false }: { initial?: Partial<AddressInput>; onSubmit: (value: AddressInput) => void; onInteraction?: () => void; submitting?: boolean }) {
   const { t } = useTranslation()
   const [form, setForm] = useState<AddressInput>({ fullName: '', phone: '', governorate: 'Cairo', city: '', street: '', building: '', notes: null, ...initial })
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const update = (key: keyof AddressInput, value: string) => setForm((current) => ({ ...current, [key]: value }))
+  const update = (key: keyof AddressInput, value: string) => { onInteraction?.(); setForm((current) => ({ ...current, [key]: value })) }
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
     const parsed = addressSchema.safeParse(form)

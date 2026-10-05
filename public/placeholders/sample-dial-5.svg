@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Watch placeholder">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202024"/><stop offset="1" stop-color="#0E0E10"/></linearGradient>
+<linearGradient id="case" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A3A3F"/><stop offset="1" stop-color="#0C0C0E"/></linearGradient></defs>
+<rect width="800" height="1000" fill="url(#bg)"/>
+<rect x="320" y="70" width="160" height="300" rx="28" fill="#151517"/><rect x="320" y="630" width="160" height="300" rx="28" fill="#151517"/>
+<rect x="590" y="478" width="34" height="44" rx="8" fill="url(#case)"/>
+<circle cx="400" cy="500" r="228" fill="url(#case)"/><circle cx="400" cy="500" r="206" fill="#17171A"/><circle cx="400" cy="500" r="184" fill="#09090B"/>
+<circle cx="400.0" cy="344.0" r="6" fill="#C8A96A"/><circle cx="478.0" cy="364.9" r="4" fill="#C8A96A"/><circle cx="535.1" cy="422.0" r="4" fill="#C8A96A"/><circle cx="556.0" cy="500.0" r="6" fill="#C8A96A"/><circle cx="535.1" cy="578.0" r="4" fill="#C8A96A"/><circle cx="478.0" cy="635.1" r="4" fill="#C8A96A"/><circle cx="400.0" cy="656.0" r="6" fill="#C8A96A"/><circle cx="322.0" cy="635.1" r="4" fill="#C8A96A"/><circle cx="264.9" cy="578.0" r="4" fill="#C8A96A"/><circle cx="244.0" cy="500.0" r="6" fill="#C8A96A"/><circle cx="264.9" cy="422.0" r="4" fill="#C8A96A"/><circle cx="322.0" cy="364.9" r="4" fill="#C8A96A"/>
+<line x1="400" y1="500" x2="332.5" y2="461.0" stroke="#E9E5DC" stroke-width="10" stroke-linecap="round"/>
+<line x1="400" y1="500" x2="502.2" y2="441.0" stroke="#E9E5DC" stroke-width="6" stroke-linecap="round"/>
+<line x1="400" y1="524" x2="400" y2="360" stroke="#C8A96A" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="400" cy="500" r="9" fill="#C8A96A"/>
+<text x="400" y="960" text-anchor="middle" font-family="sans-serif" font-size="22" letter-spacing="6" fill="#6B675F">SAMPLE IMAGE</text></svg>

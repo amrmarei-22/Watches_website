@@ -30,3 +30,21 @@ The following proposed hero copy needs owner review:
 
 - `home.heroHeadline`: “Time, refined.” / “الوقت، بإتقان.”
 - `home.heroSubtitle`: “A considered collection of watches for every moment.” / “مجموعة مختارة بعناية من الساعات لكل لحظة.”
+
+## Home and chrome task 11
+
+The following Arabic strings need owner review:
+
+- `home.shopByGender`
+- `home.newArrivals`
+- `home.ourBrands`
+- `home.trust`
+- `home.heroVisualAlt`
+- `cta.shopWatches`
+- `cta.viewAll`
+- `footer.*`
+- `pages.contact.title`
+- `pages.shipping.title`
+- `pages.privacy.title`
+- `pages.terms.title`
+- `pages.contentPending`
