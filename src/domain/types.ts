@@ -80,6 +80,7 @@ export interface Address {
   street: string
   building: string
   notes: string | null
+  isDefault?: boolean
 }
 
 export interface OrderLine {

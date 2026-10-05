@@ -57,6 +57,7 @@
     "continueShopping": "تابع التسوق",
     "startShopping": "ابدأ التسوق",
     "goHome": "الرئيسية",
+    "back": "رجوع",
     "resendLink": "إعادة إرسال الرابط",
     "reload": "إعادة التحميل"
   },
@@ -208,7 +209,8 @@
       "remove": "إزالة",
       "subtotal": "المجموع الفرعي",
       "quantity": "الكمية",
-      "drawer": "السلة المصغرة"
+      "drawer": "السلة المصغرة",
+      "back": "العودة إلى السلة"
   },
   "nav": {
       "main": "التنقل الرئيسي",
@@ -223,6 +225,13 @@
       "switchLanguage": "تغيير اللغة إلى {{language}}",
       "account": "الحساب",
       "cart": "السلة",
+      "cartItems": "{{count}} عناصر في السلة",
+      "cartItems_zero": "السلة فارغة",
+      "cartItems_one": "عنصر واحد في السلة",
+      "cartItems_two": "عنصران في السلة",
+      "cartItems_few": "{{count}} عناصر في السلة",
+      "cartItems_many": "{{count}} عنصرًا في السلة",
+      "cartItems_other": "{{count}} عنصر في السلة",
     "menu": "القائمة"
   },
   "footer": {
@@ -301,15 +310,19 @@
   "checkout": {
     "summary": "ملخص الطلب",
     "addressStep": "العنوان",
-    "reviewStep": "المراجعة والدفع",
-    "doneStep": "تم",
+    "reviewStep": "مراجعة وتأكيد",
+    "doneStep": "تأكيد الطلب",
     "chooseAddress": "اختر عنواناً محفوظاً",
     "addAddress": "إضافة عنوان جديد",
     "enterAddress": "أدخل عنوان التوصيل",
-    "reviewOrder": "مراجعة الطلب",
+    "cancelAddAddress": "إلغاء",
+    "reviewOrder": "مراجعة وتأكيد الطلب",
     "payment": "الدفع",
     "placeOrder": "تأكيد الطلب",
-    "orderPlaced": "تم إنشاء طلبك.",
+    "orderPlaced": "تم تأكيد طلبك بنجاح.",
+    "confirmPlaceOrder": "تأكيد إنشاء الطلب",
+    "confirmPlaceOrderMessage": "يرجى مراجعة تفاصيل طلبك وتأكيدها قبل الإرسال. سيتم الدفع عند الاستلام.",
+    "cancel": "العودة للمراجعة",
     "viewOrder": "عرض تفاصيل الطلب"
   },
   "orders": {

@@ -7,7 +7,8 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   const location = useLocation()
 
   useEffect(() => {
-    if (reducedMotion || window.matchMedia('(pointer: coarse)').matches) return
+    const isHome = /^\/(ar|en)\/?$/.test(location.pathname)
+    if (!isHome || reducedMotion || window.matchMedia('(pointer: coarse)').matches) return
     let lenis: { raf: (time: number) => void; destroy: () => void; stop: () => void; start: () => void } | undefined
     let frame = 0
     let cancelled = false
@@ -28,9 +29,11 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       if (cancelled) return
       const instance = new Lenis()
       lenis = instance
+      document.documentElement.dataset.lenisActive = 'true'
       onDialogChange()
       const raf = (time: number) => {
         instance.raf(time)
+        window.dispatchEvent(new CustomEvent('lenis-scroll'))
         frame = requestAnimationFrame(raf)
       }
       frame = requestAnimationFrame(raf)
@@ -44,6 +47,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       cancelled = true
       cancelAnimationFrame(frame)
       lenis?.destroy()
+      delete document.documentElement.dataset.lenisActive
       observer.disconnect()
       document.removeEventListener('focusin', onFocus)
     }

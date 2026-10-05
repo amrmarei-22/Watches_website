@@ -57,6 +57,7 @@
     "continueShopping": "Continue shopping",
     "startShopping": "Start shopping",
     "goHome": "Go home",
+    "back": "Back",
     "resendLink": "Resend link",
     "reload": "Reload"
   },
@@ -208,7 +209,8 @@
       "remove": "Remove",
       "subtotal": "Subtotal",
       "quantity": "Quantity",
-      "drawer": "Mini cart"
+      "drawer": "Mini cart",
+      "back": "Back to cart"
   },
   "nav": {
       "main": "Main navigation",
@@ -223,6 +225,13 @@
       "switchLanguage": "Switch language to {{language}}",
       "account": "Account",
       "cart": "Cart",
+      "cartItems": "{{count}} items in cart",
+      "cartItems_zero": "Cart is empty",
+      "cartItems_one": "{{count}} item in cart",
+      "cartItems_two": "{{count}} items in cart",
+      "cartItems_few": "{{count}} items in cart",
+      "cartItems_many": "{{count}} items in cart",
+      "cartItems_other": "{{count}} items in cart",
     "menu": "Menu"
   },
   "footer": {
@@ -301,15 +310,19 @@
   "checkout": {
     "summary": "Order summary",
     "addressStep": "Address",
-    "reviewStep": "Review & payment",
-    "doneStep": "Done",
+    "reviewStep": "Review & confirm",
+    "doneStep": "Confirmation",
     "chooseAddress": "Choose a saved address",
     "addAddress": "Add a new address",
     "enterAddress": "Enter your delivery address",
-    "reviewOrder": "Review order",
+    "cancelAddAddress": "Cancel",
+    "reviewOrder": "Review and confirm order",
     "payment": "Payment",
     "placeOrder": "Place order",
-    "orderPlaced": "Your order has been placed.",
+    "orderPlaced": "Your order has been placed successfully.",
+    "confirmPlaceOrder": "Confirm order",
+    "confirmPlaceOrderMessage": "Please confirm the order details before placing your order. You will pay cash on delivery.",
+    "cancel": "Go back",
     "viewOrder": "View order details"
   },
   "orders": {

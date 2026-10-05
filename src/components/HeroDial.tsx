@@ -22,6 +22,16 @@ export function HeroDial() {
       <circle cx="280" cy="280" r="238" fill="url(#hero-dial-bezel)" />
       <circle cx="280" cy="280" r="226" fill="none" stroke="var(--accent)" strokeWidth="3" />
       <circle cx="280" cy="280" r="216" fill="url(#hero-dial-face)" stroke="var(--border)" strokeWidth="2" />
+      <g className="hero-dial-crown hero-dial-crown-left" aria-hidden="true">
+        <rect x="18" y="264" width="24" height="32" rx="6" />
+        <line x1="14" y1="270" x2="14" y2="290" />
+        <line x1="10" y1="270" x2="10" y2="290" />
+      </g>
+      <g className="hero-dial-crown hero-dial-crown-right" aria-hidden="true">
+        <rect x="518" y="264" width="24" height="32" rx="6" />
+        <line x1="546" y1="270" x2="546" y2="290" />
+        <line x1="550" y1="270" x2="550" y2="290" />
+      </g>
       <g className="hero-dial-ticks">
         {Array.from({ length: 60 }, (_, index) => <line key={index} x1="280" y1="78" x2="280" y2={index % 5 === 0 ? 94 : 86} transform={`rotate(${index * 6} 280 280)`} />)}
       </g>

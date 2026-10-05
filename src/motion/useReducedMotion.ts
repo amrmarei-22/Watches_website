@@ -11,10 +11,19 @@ export function useReducedMotion(): boolean {
 
   useEffect(() => {
     const media = window.matchMedia(query)
+    const updateDocumentClass = () => {
+      document.documentElement.classList.toggle('motion-ok', !media.matches)
+    }
     const update = () => setReduced(media.matches)
     update()
+    updateDocumentClass()
     media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
+    media.addEventListener('change', updateDocumentClass)
+    return () => {
+      media.removeEventListener('change', update)
+      media.removeEventListener('change', updateDocumentClass)
+      document.documentElement.classList.remove('motion-ok')
+    }
   }, [])
 
   return reduced

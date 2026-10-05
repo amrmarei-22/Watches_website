@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -21,6 +21,9 @@ import { stagger } from '../motion/presets'
 import { lazy, Suspense } from 'react'
 import { getBrands, getFeaturedProducts, getLatestProductByGender, getNewArrivals, homeGenders } from '../features/catalog/homeLogic'
 import { HeroDial } from '../components/HeroDial'
+import { MotionDebugHud } from '../motion/MotionDebugHud'
+import { markEntranceSeen, shouldRunEntrance } from '../motion/entrance'
+import { shouldAnimate } from '../motion/featuredHelpers'
 
 const HomeFeaturedMotion = lazy(() => import('../motion/HomeFeaturedMotion').then((module) => ({ default: module.HomeFeaturedMotion })))
 
@@ -117,6 +120,7 @@ export function ListingPage() {
 export function ProductPage() {
   const { t, i18n } = useTranslation()
   const { id } = useParams()
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useCatalogProducts()
   const { addItem, items: cartItems } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -133,7 +137,7 @@ export function ProductPage() {
   const name = lang === 'ar' ? product.nameAr : product.nameEn
   const description = lang === 'ar' ? product.descriptionAr || product.descriptionEn : product.descriptionEn || product.descriptionAr
   const add = async () => { try { await addItem(product, quantity); setAdded(true) } catch { setAdded(false) } }
-  return <section className="container product-page"><div className="product-gallery">{product.images.map((image, index) => <img key={image.id} src={getProductImageUrl(image.path)} width="800" height="1000" loading={index === 0 ? 'eager' : 'lazy'} alt={name} />)}</div><div className="product-info motion-reveal"><span className="product-brand">{product.brand}</span><h1 className="page-heading">{name}</h1><strong className="product-price">{formatMoney(product.price, lang)}</strong><AvailabilityBadge product={product} /><dl className="product-specs">{Object.entries(product.specs).map(([key, value]) => <div key={key}><dt>{key === 'caseSize' ? t('catalog.caseSize') : key === 'waterResistance' ? t('catalog.waterResistance') : t(`specs.${key}.${value}`)}</dt><dd>{key === 'caseSize' ? `${value} mm` : key === 'waterResistance' ? `${value} m` : t(`specs.${key}.${value}`)}</dd></div>)}</dl><p>{description}</p><label className="quantity-control">{t('catalog.quantity')}<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0}>{Array.from({ length: availableToAdd }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button>{added && <p className="sr-only" aria-live="polite">{t('messages.CART_ADDED')}</p>}</div><div className="mobile-add-bar"><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button></div></section>
+  return <section className="container product-page"><button type="button" className="product-back-link" onClick={() => { if (window.history.length > 1) navigate(-1); else navigate(`/${lang}`) }}><span aria-hidden="true">←</span> {t('actions.back')}</button><div className="product-gallery">{product.images.map((image, index) => <img key={image.id} src={getProductImageUrl(image.path)} width="800" height="1000" loading={index === 0 ? 'eager' : 'lazy'} alt={name} />)}</div><div className="product-info motion-reveal"><span className="product-brand">{product.brand}</span><h1 className="page-heading">{name}</h1><strong className="product-price">{formatMoney(product.price, lang)}</strong><AvailabilityBadge product={product} /><dl className="product-specs">{Object.entries(product.specs).map(([key, value]) => <div key={key}><dt>{key === 'caseSize' ? t('catalog.caseSize') : key === 'waterResistance' ? t('catalog.waterResistance') : t(`specs.${key}.${value}`)}</dt><dd>{key === 'caseSize' ? `${value} mm` : key === 'waterResistance' ? `${value} m` : t(`specs.${key}.${value}`)}</dd></div>)}</dl><p>{description}</p><label className="quantity-control">{t('catalog.quantity')}<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0}>{Array.from({ length: availableToAdd }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button>{added && <p className="sr-only" aria-live="polite">{t('messages.CART_ADDED')}</p>}</div><div className="mobile-add-bar"><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button></div></section>
 }
 
 export function HomePage() {
@@ -142,7 +146,50 @@ export function HomePage() {
   const lang = i18n.language as i18nLanguage
   const direction = useDirection()
   const reduced = useReducedMotion()
+  const showcaseRef = useRef<HTMLDivElement>(null)
+  const [showScrollCue, setShowScrollCue] = useState(true)
   usePageTitle(t('pages.home'))
+  useEffect(() => {
+    const onScroll = () => setShowScrollCue(window.scrollY <= 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  useEffect(() => {
+    if (!data || reduced || !shouldAnimate({ reducedMotion: reduced, width: window.innerWidth })) return
+    let storage: Storage | null = null
+    try { storage = window.sessionStorage } catch { return }
+    if (!shouldRunEntrance(storage)) return
+    markEntranceSeen(storage)
+    let cancelled = false
+    void import('gsap').then(({ gsap }) => {
+      if (cancelled) return
+      gsap.fromTo('.home-entrance-item', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, clearProps: 'transform,opacity' })
+    })
+    return () => { cancelled = true }
+  }, [data, reduced])
+  useEffect(() => {
+    if (!data || reduced) return
+    let cancelled = false
+    let cleanup: (() => void) | undefined
+    void import('gsap').then(({ gsap }) => {
+      if (cancelled) return
+      const hero = document.querySelector<HTMLElement>('.home-hero')
+      if (!hero) return
+      const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
+      timeline
+        .fromTo(hero.querySelector('.hero-copy h1'), { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.7 })
+        .fromTo(hero.querySelector('.hero-copy p'), { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.42')
+        .fromTo(hero.querySelector('.hero-copy .ui-button'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55 }, '-=0.32')
+      const watch = hero.querySelector<HTMLElement>('.home-hero-watch, .hero-dial')
+      if (watch) gsap.to(watch, { y: -8, duration: 3.8, ease: 'sine.inOut', repeat: -1, yoyo: true })
+      cleanup = () => {
+        timeline.kill()
+        if (watch) gsap.killTweensOf(watch)
+      }
+    })
+    return () => { cancelled = true; cleanup?.() }
+  }, [data, reduced])
   useEffect(() => {
     const image = data?.find((product) => product.featured)?.images[0]
     if (!image) return
@@ -160,8 +207,8 @@ export function HomePage() {
   const genderTiles = homeGenders.map((gender) => ({ gender, product: getLatestProductByGender(data, gender) })).filter((item): item is { gender: typeof item.gender; product: Product } => item.product !== undefined)
   const heroVisual = !heroPath || heroPath.startsWith('/placeholders/') ? <HeroDial /> : <img className="home-hero-watch" src={getProductImageUrl(heroPath)} width="800" height="1000" loading="eager" alt={featured[0] ? (lang === 'ar' ? featured[0].nameAr : featured[0].nameEn) : t('home.heroVisualAlt')} />
   return <section className="home-page">
-    <div className="container home-hero motion-reveal" data-direction={direction} data-reduced={reduced}><div className="hero-copy"><h1 className="page-heading"><span className="hero-headline-mask"><span>{t('home.heroHeadline')}</span></span></h1><p>{t('home.heroSubtitle')}</p><Link className="ui-button ui-button-primary" to={`/${lang}/shop`}>{t('chrome.cta.shopWatches')}</Link></div><div className="hero-visual">{heroVisual}</div></div>
-    {featured.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.featured')}</h2><Link to={`/${lang}/shop`}>{t('chrome.cta.viewAll')}</Link></div><Suspense fallback={<div className="product-grid">{featured.slice(0, 12).map((product) => <ProductCard key={product.id} product={product} />)}</div>}><HomeFeaturedMotion products={featured} /></Suspense></div>}
+    <div className="container home-hero motion-reveal" data-direction={direction} data-reduced={reduced}><div className="hero-copy"><h1 className="page-heading"><span className="hero-headline-mask"><span>{t('home.heroHeadline')}</span></span></h1><p>{t('home.heroSubtitle')}</p><Link className="ui-button ui-button-primary" to={`/${lang}/shop`}>{t('chrome.cta.shopWatches')}</Link></div><div className="hero-visual">{heroVisual}</div><span className={`scroll-cue ${showScrollCue ? '' : 'is-hidden'}`} aria-hidden="true">↓</span></div>
+    {featured.length > 0 && <div className="container home-section home-entrance-item"><div className="section-heading"><h2>{t('chrome.home.featured')}</h2><Link to={`/${lang}/shop`}>{t('chrome.cta.viewAll')}</Link></div><Suspense fallback={<div className="product-grid">{featured.slice(0, 12).map((product) => <ProductCard key={product.id} product={product} />)}</div>}><div ref={showcaseRef}><HomeFeaturedMotion products={featured} /></div></Suspense><MotionDebugHud showcase={showcaseRef.current} /></div>}
     {genderTiles.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.shopByGender')}</h2></div><div className="gender-tiles">{genderTiles.map(({ gender, product }) => <Link className="gender-tile" key={gender} to={`/${lang}/shop?gender=${gender}`}><img src={getProductImageUrl(product.images[0]?.path ?? '')} width="800" height="1000" loading="lazy" alt={t(`specs.gender.${gender}`)} /><span>{t(`specs.gender.${gender}`)}</span></Link>)}</div></div>}
     {newArrivals.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.newArrivals')}</h2><Link to={`/${lang}/shop`}>{t('chrome.cta.viewAll')}</Link></div><div className="product-grid">{newArrivals.map((product) => <ProductCard key={product.id} product={product} />)}</div></div>}
     {brands.length > 0 && <div className="container home-section"><div className="section-heading"><h2>{t('chrome.home.ourBrands')}</h2></div><div className="brand-links">{brands.map((brandName) => <Link key={brandName} to={`/${lang}/shop?brand=${encodeURIComponent(brandName)}`}>{brandName}</Link>)}</div></div>}
