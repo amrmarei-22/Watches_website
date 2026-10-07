@@ -27,11 +27,11 @@
 
   | Home | Shop |
   | --- | --- |
-  | ![Home](docs/screenshots/Screenshot 2026-10-07 042252.png) | ![Shop](docs/screenshots/Screenshot 2026-10-07 042409.png) |
+  | ![Home](docs/screenshots/home.png) | ![Shop](docs/screenshots/shop.png) |
 
   | Checkout | Admin dashboard |
   | --- | --- |
-  | ![Checkout](docs/screenshots/Screenshot 2026-10-07 042538.png) | ![Admin](docs/screenshots/Screenshot 2026-10-07 150303.png) |
+  | ![Checkout](docs/screenshots/cart.png) | ![Admin](docs/screenshots/admin.png) |
 
 
 ## Table of contents
