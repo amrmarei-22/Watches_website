@@ -9,6 +9,7 @@ import { getAvailability, maxQuantity } from '../domain/inventory'
 import { formatMoney } from '../domain/money'
 import type { Product } from '../domain/types'
 import { useCart } from '../hooks/useCart'
+import { useAuthState } from '../hooks/useAuthState'
 import { useCatalogProducts } from '../features/catalog/catalogQuery'
 import { getProductImageUrl } from '../features/catalog/imageUrl'
 import { emptyCatalogFilters, filterAndSearchProducts, getAvailabilityLabel, paginateProducts, sortProducts, type CatalogFilters, type CatalogSort } from '../features/catalog/catalogLogic'
@@ -121,6 +122,7 @@ export function ProductPage() {
   const { t, i18n } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
+  const { role } = useAuthState()
   const { data, isLoading, isError } = useCatalogProducts()
   const { addItem, items: cartItems } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -136,8 +138,14 @@ export function ProductPage() {
   const availableToAdd = Math.max(0, max - alreadyInCart)
   const name = lang === 'ar' ? product.nameAr : product.nameEn
   const description = lang === 'ar' ? product.descriptionAr || product.descriptionEn : product.descriptionEn || product.descriptionAr
-  const add = async () => { try { await addItem(product, quantity); setAdded(true) } catch { setAdded(false) } }
-  return <section className="container product-page"><button type="button" className="product-back-link" onClick={() => { if (window.history.length > 1) navigate(-1); else navigate(`/${lang}`) }}><span aria-hidden="true">←</span> {t('actions.back')}</button><div className="product-gallery">{product.images.map((image, index) => <img key={image.id} src={getProductImageUrl(image.path)} width="800" height="1000" loading={index === 0 ? 'eager' : 'lazy'} alt={name} />)}</div><div className="product-info motion-reveal"><span className="product-brand">{product.brand}</span><h1 className="page-heading">{name}</h1><strong className="product-price">{formatMoney(product.price, lang)}</strong><AvailabilityBadge product={product} /><dl className="product-specs">{Object.entries(product.specs).map(([key, value]) => <div key={key}><dt>{key === 'caseSize' ? t('catalog.caseSize') : key === 'waterResistance' ? t('catalog.waterResistance') : t(`specs.${key}.${value}`)}</dt><dd>{key === 'caseSize' ? `${value} mm` : key === 'waterResistance' ? `${value} m` : t(`specs.${key}.${value}`)}</dd></div>)}</dl><p>{description}</p><label className="quantity-control">{t('catalog.quantity')}<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0}>{Array.from({ length: availableToAdd }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button>{added && <p className="sr-only" aria-live="polite">{t('messages.CART_ADDED')}</p>}</div><div className="mobile-add-bar"><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button></div></section>
+  const add = async () => {
+    if (role === 'GUEST') {
+      navigate(`/${lang}/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+      return
+    }
+    try { await addItem(product, quantity); setAdded(true) } catch { setAdded(false) }
+  }
+  return <section className="container product-page"><button type="button" className="product-back-link" onClick={() => { if (window.history.length > 1) navigate(-1); else navigate(`/${lang}`) }}><span aria-hidden="true">←</span> {t('actions.back')}</button><div className="product-gallery">{product.images.map((image, index) => <img key={image.id} src={getProductImageUrl(image.path)} width="800" height="1000" loading={index === 0 ? 'eager' : 'lazy'} alt={name} />)}</div><div className="product-info motion-reveal"><div className="product-brand-status"><span className="product-brand">{product.brand}</span><AvailabilityBadge product={product} /></div><h1 className="page-heading">{name}</h1><strong className="product-price">{formatMoney(product.price, lang)}</strong><dl className="product-specs">{Object.entries(product.specs).map(([key, value]) => <div key={key}><dt>{key === 'caseSize' ? t('catalog.caseSize') : key === 'waterResistance' ? t('catalog.waterResistance') : t(`specs.${key}.${value}`)}</dt><dd>{key === 'caseSize' ? `${value} mm` : key === 'waterResistance' ? `${value} m` : t(`specs.${key}.${value}`)}</dd></div>)}</dl><p>{description}</p><label className="quantity-control">{t('catalog.quantity')}<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0}>{Array.from({ length: availableToAdd }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button>{added && <p className="sr-only" aria-live="polite">{t('messages.CART_ADDED')}</p>}</div><div className="mobile-add-bar"><Button disabled={availability === 'OUT_OF_STOCK' || availableToAdd === 0} onClick={() => void add()}>{added ? '✓' : availability === 'OUT_OF_STOCK' ? t('messages.PRODUCT_OUT_OF_STOCK') : t('catalog.addToCart')}</Button></div></section>
 }
 
 export function HomePage() {

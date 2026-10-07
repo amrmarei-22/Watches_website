@@ -13,7 +13,7 @@ Notation: `→` next step, `[E]` error/edge case. Rule IDs refer to BUSINESS_RUL
 - Shows: gallery, name, brand, price, specs, description, availability message, quantity selector, Add to cart.
 - By availability (PRODUCT_STATES §3): IN_STOCK normal; LOW_STOCK shows "Only {n} left"; OUT_OF_STOCK disables button.
 - [E] Product DRAFT/ARCHIVED/nonexistent → 404.
-- Add to cart: success → mini-cart toast `CART_ADDED`; qty above allowed → clamp + `CART_QTY_CLAMPED`.
+- Add to cart: GUEST → Login with `returnTo` set to the product page; CUSTOMER → success → mini-cart toast `CART_ADDED`; qty above allowed → clamp + `CART_QTY_CLAMPED`.
 
 ## F3. Cart
 1. Open cart → server revalidation (BR 3.6) → show changes.

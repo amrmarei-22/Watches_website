@@ -20,19 +20,19 @@
 
 </div>
 
-<!--
+
   Add screenshots once you have them (store the images in docs/screenshots/), then uncomment this block:
 
   ## Screenshots
 
   | Home | Shop |
   | --- | --- |
-  | ![Home](docs/screenshots/home.png) | ![Shop](docs/screenshots/shop.png) |
+  | ![Home](docs/screenshots/Screenshot 2026-10-07 042252.png) | ![Shop](docs/screenshots/Screenshot 2026-10-07 042409.png) |
 
   | Checkout | Admin dashboard |
   | --- | --- |
-  | ![Checkout](docs/screenshots/checkout.png) | ![Admin](docs/screenshots/admin.png) |
--->
+  | ![Checkout](docs/screenshots/Screenshot 2026-10-07 042538.png) | ![Admin](docs/screenshots/Screenshot 2026-10-07 150303.png) |
+
 
 ## Table of contents
 
