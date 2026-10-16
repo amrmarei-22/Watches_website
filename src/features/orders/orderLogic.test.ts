@@ -13,6 +13,15 @@ describe('checkout and order logic', () => {
   it('maps unknown checkout codes to the generic user-facing error', () => {
     expect(checkoutErrorMessage({ message: 'UNEXPECTED_CODE' })).toBe('CHECKOUT_ERROR')
   })
+  it.each([
+    'RECEIPT_REQUIRED',
+    'RECEIPT_INVALID',
+    'RECEIPT_INVALID_TYPE',
+    'RECEIPT_MAX_SIZE',
+    'RECEIPT_UPLOAD_FAILED',
+  ])('preserves receipt error code %s', (code) => {
+    expect(checkoutErrorMessage({ message: code })).toBe(code)
+  })
   it('parses stock conflicts', () => expect(mapCheckoutError({ message: 'CHECKOUT_STOCK_CONFLICT', details: '[{"product_id":"p1"},{"product_id":"p2"}]' })).toEqual({ kind: 'stockConflict', productIds: ['p1', 'p2'] }))
   it('previews totals', () => expect(orderTotalPreview([{ unitPriceSnapshot: 100, quantity: 2 }, { unitPriceSnapshot: 50, quantity: 1 }], 25)).toEqual({ subtotal: 250, shippingFee: 25, total: 275 }))
   it('builds a chronological timeline', () => expect(buildStatusTimeline([{ from: null, to: 'PENDING', actorId: 'a', actorRole: 'CUSTOMER', reason: null, timestamp: '2026-01-02' }, { from: 'PENDING', to: 'CONFIRMED', actorId: 'a', actorRole: 'ADMIN', reason: null, timestamp: '2026-01-01' }]).map((entry) => entry.to)).toEqual(['CONFIRMED', 'PENDING']))

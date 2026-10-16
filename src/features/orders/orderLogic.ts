@@ -27,7 +27,18 @@ export function mapCheckoutError(error: { message?: string; details?: string } |
 }
 
 export function checkoutErrorMessage(error: { message?: string } | null): string {
-  const known = ['AUTH_VERIFY_REQUIRED', 'CART_EMPTY', 'CHECKOUT_STOCK_CONFLICT', 'CART_PRICE_CHANGED', 'AUTH_SESSION_EXPIRED']
+  const known = [
+    'AUTH_VERIFY_REQUIRED',
+    'CART_EMPTY',
+    'CHECKOUT_STOCK_CONFLICT',
+    'CART_PRICE_CHANGED',
+    'AUTH_SESSION_EXPIRED',
+    'RECEIPT_REQUIRED',
+    'RECEIPT_INVALID',
+    'RECEIPT_INVALID_TYPE',
+    'RECEIPT_MAX_SIZE',
+    'RECEIPT_UPLOAD_FAILED',
+  ]
   return error?.message && known.includes(error.message) ? error.message : 'CHECKOUT_ERROR'
 }
 

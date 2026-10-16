@@ -80,6 +80,10 @@ a { color: inherit; }
 .admin-table th, .admin-table td { padding: .75rem; border-block-end: 1px solid #e5e5e5; }
 .admin-table button, .admin-table a { color: #705d2e; cursor: pointer; }
 .admin-thumb { width: 3rem; height: 3.5rem; object-fit: cover; }
+.admin-order-thumb { width: 3.25rem; height: 3.25rem; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; transition: transform .15s ease, box-shadow .15s ease; display: block; }
+.admin-order-thumb:hover { transform: scale(1.15); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+.admin-order-thumb-wrap { display: inline-flex; align-items: center; justify-content: center; }
+.admin-order-thumb-empty { display: inline-flex; align-items: center; justify-content: center; width: 3.25rem; height: 3.25rem; border-radius: 6px; background: #f8fafc; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 0.85rem; }
 .admin-badge { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .65rem; border: 1px solid #aaa; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
 .admin-badge.product-draft { color: #805ad5; border-color: #805ad5; background: #faf5ff; }
 .admin-badge.product-active { color: #276749; border-color: #276749; background: #f0fff4; }

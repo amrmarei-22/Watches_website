@@ -7,10 +7,22 @@ import { useAuthState } from '../hooks/useAuthState'
 import { getLegalActions, type OrderAction } from '../domain/orderStateMachine'
 import type { OrderStatus } from '../domain/types'
 import { supabase } from '../lib/supabaseClient'
+import { RECEIPTS_BUCKET } from '../config/businessConfig'
 import { adminOrderStatuses, cairoDateRange, normalizeDashboardCounts, sanitizePostgrestSearch, transitionErrorCode } from './adminHelpers'
 
-type OrderListRow = { id: string; order_number: string; status: OrderStatus; total: number; customer_name: string; customer_email: string; address_snapshot: Record<string, string>; created_at: string }
-type OrderDetail = OrderListRow & { subtotal: number; shipping_fee: number; payment_method: string; tracking_number: string | null; cancel_reason: string | null; order_lines: Array<{ id: string; sku_snapshot: string; name_ar_snapshot: string; name_en_snapshot: string; unit_price_snapshot: number; quantity: number; line_total: number }>; order_status_history: Array<{ from_status: OrderStatus | null; to_status: OrderStatus; actor_id: string | null; actor_role: string | null; reason: string | null; created_at: string }> }
+type OrderListRow = {
+  id: string
+  order_number: string
+  status: OrderStatus
+  total: number
+  customer_name: string
+  customer_email: string
+  address_snapshot: Record<string, string>
+  created_at: string
+  receipt_path?: string | null
+  receipt_url?: string | null
+}
+type OrderDetail = OrderListRow & { subtotal: number; shipping_fee: number; payment_method: string; receipt_path: string | null; receipt_url?: string | null; tracking_number: string | null; cancel_reason: string | null; order_lines: Array<{ id: string; sku_snapshot: string; name_ar_snapshot: string; name_en_snapshot: string; unit_price_snapshot: number; quantity: number; line_total: number }>; order_status_history: Array<{ from_status: OrderStatus | null; to_status: OrderStatus; actor_id: string | null; actor_role: string | null; reason: string | null; created_at: string }> }
 type UserRow = { id: string; name: string; email: string; phone: string; role: 'CUSTOMER' | 'ADMIN'; enabled: boolean; email_confirmed: boolean; created_at: string }
 type NoteRow = { id: string; note: string; admin_id: string; created_at: string }
 type AuditRow = { id: string; actor_id: string | null; action: string; entity: string; entity_id: string | null; created_at: string }
@@ -27,29 +39,123 @@ function Pager({ page, hasNext, onChange }: { page: number; hasNext: boolean; on
 }
 function StatusBadge({ status }: { status: OrderStatus }) { const { t } = useTranslation(); return <span className="admin-badge">{t(`orderStatus.${status}`)}</span> }
 
+function OrderThumbnail({ path, url, orderNumber }: { path?: string | null; url?: string | null; orderNumber: string }) {
+  const { t } = useTranslation()
+  const [imgUrl, setImgUrl] = useState<string | null>(url || null)
+
+  useEffect(() => {
+    if (url) {
+      setImgUrl(url)
+      return
+    }
+    if (!path) {
+      setImgUrl(null)
+      return
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      setImgUrl(path)
+      return
+    }
+    void supabase.storage
+      .from(RECEIPTS_BUCKET)
+      .createSignedUrl(path, 3600)
+      .then(({ data, error }) => {
+        if (!error && data?.signedUrl) {
+          setImgUrl(data.signedUrl)
+        } else {
+          const { data: publicData } = supabase.storage.from(RECEIPTS_BUCKET).getPublicUrl(path)
+          setImgUrl(publicData?.publicUrl || null)
+        }
+      })
+      .catch(() => setImgUrl(null))
+  }, [path, url])
+
+  if (!imgUrl) {
+    return <span className="admin-order-thumb-empty" title={t('orders.cashOnDelivery')}>—</span>
+  }
+
+  return (
+    <a
+      href={imgUrl}
+      target="_blank"
+      rel="noreferrer"
+      title={`${t('admin.receipt')} - ${orderNumber}`}
+      className="admin-order-thumb-wrap"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <img
+        src={imgUrl}
+        alt={`${t('admin.receipt')} ${orderNumber}`}
+        className="admin-order-thumb"
+        loading="lazy"
+      />
+    </a>
+  )
+}
+
 export function Orders() {
   const { t } = useTranslation(); const [params, setParams] = useSearchParams(); const [rows, setRows] = useState<OrderListRow[]>([]); const [count, setCount] = useState(0); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null)
   const page = Math.max(Number(params.get('page') ?? '1'), 1); const status = params.get('status') ?? ''; const search = params.get('q') ?? ''; const from = params.get('from') ?? ''; const to = params.get('to') ?? ''
-  const load = async () => { setLoading(true); setError(null); const range = cairoDateRange(from, to); let query = supabase.from('orders').select('id,order_number,status,total,customer_name,customer_email,address_snapshot,created_at', { count: 'exact' }).order('created_at', { ascending: false }).range((page - 1) * 20, page * 20 - 1); if (adminOrderStatuses.includes(status as OrderStatus)) query = query.eq('status', status); const safe = sanitizePostgrestSearch(search); if (safe) query = query.or(`order_number.ilike.%${safe}%,customer_email.ilike.%${safe}%,address_snapshot->>phone.ilike.%${safe}%`); if (range.from) query = query.gte('created_at', range.from); if (range.to) query = query.lte('created_at', range.to); const result = await query; if (result.error) setError(apiCode(result.error.message)); else { setRows((result.data ?? []) as OrderListRow[]); setCount(result.count ?? 0) } setLoading(false) }
+  const load = async () => { setLoading(true); setError(null); const range = cairoDateRange(from, to); let query = supabase.from('orders').select('id,order_number,status,total,customer_name,customer_email,address_snapshot,created_at,receipt_path,receipt_url', { count: 'exact' }).order('created_at', { ascending: false }).range((page - 1) * 20, page * 20 - 1); if (adminOrderStatuses.includes(status as OrderStatus)) query = query.eq('status', status); const safe = sanitizePostgrestSearch(search); if (safe) query = query.or(`order_number.ilike.%${safe}%,customer_email.ilike.%${safe}%,address_snapshot->>phone.ilike.%${safe}%`); if (range.from) query = query.gte('created_at', range.from); if (range.to) query = query.lte('created_at', range.to); const result = await query; if (result.error) setError(apiCode(result.error.message)); else { setRows((result.data ?? []) as OrderListRow[]); setCount(result.count ?? 0) } setLoading(false) }
   useEffect(() => { void load() }, [page, status, search, from, to])
   const update = (key: string, value: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); if (key !== 'page') next.set('page', '1'); setParams(next) }
-  return <section className="admin-page"><div className="admin-page-title"><h1>{t('admin.orders')}</h1></div><div className="admin-toolbar"><input aria-label={t('admin.searchOrders')} placeholder={t('admin.searchOrders')} value={search} onChange={(e) => update('q', e.target.value)} /><select aria-label={t('admin.status')} value={status} onChange={(e) => update('status', e.target.value)}><option value="">{t('admin.allStatuses')}</option>{adminOrderStatuses.map((item) => <option key={item} value={item}>{t(`orderStatus.${item}`)}</option>)}</select><label>{t('admin.from')}<input type="date" value={from} onChange={(e) => update('from', e.target.value)} /></label><label>{t('admin.to')}<input type="date" value={to} onChange={(e) => update('to', e.target.value)} /></label></div>{loading ? <div className="admin-skeleton" /> : error ? <AdminError value={error} retry={() => void load()} /> : rows.length === 0 ? <div className="admin-empty">{t('admin.emptyOrders')}</div> : <><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th scope="col">{t('admin.orderNumber')}</th><th scope="col">{t('admin.customer')}</th><th scope="col">{t('admin.status')}</th><th scope="col">{t('admin.total')}</th><th scope="col">{t('admin.date')}</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td><Link to={`/admin/orders/${row.id}`}>{row.order_number}</Link></td><td>{row.customer_name}<br />{row.customer_email}</td><td><StatusBadge status={row.status} /></td><td>{(row.total / 100).toFixed(2)} EGP</td><td>{new Date(row.created_at).toLocaleString()}</td></tr>)}</tbody></table></div><Pager page={page} hasNext={page * 20 < count} onChange={(value) => update('page', String(value))} /></>}</section>
+  return <section className="admin-page"><div className="admin-page-title"><h1>{t('admin.orders')}</h1></div><div className="admin-toolbar"><input aria-label={t('admin.searchOrders')} placeholder={t('admin.searchOrders')} value={search} onChange={(e) => update('q', e.target.value)} /><select aria-label={t('admin.status')} value={status} onChange={(e) => update('status', e.target.value)}><option value="">{t('admin.allStatuses')}</option>{adminOrderStatuses.map((item) => <option key={item} value={item}>{t(`orderStatus.${item}`)}</option>)}</select><label>{t('admin.from')}<input type="date" value={from} onChange={(e) => update('from', e.target.value)} /></label><label>{t('admin.to')}<input type="date" value={to} onChange={(e) => update('to', e.target.value)} /></label></div>{loading ? <div className="admin-skeleton" /> : error ? <AdminError value={error} retry={() => void load()} /> : rows.length === 0 ? <div className="admin-empty">{t('admin.emptyOrders')}</div> : <><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th scope="col">{t('admin.orderImage')}</th><th scope="col">{t('admin.orderNumber')}</th><th scope="col">{t('admin.customer')}</th><th scope="col">{t('admin.status')}</th><th scope="col">{t('admin.total')}</th><th scope="col">{t('admin.date')}</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td><OrderThumbnail url={row.receipt_url} path={row.receipt_path} orderNumber={row.order_number} /></td><td><Link to={`/admin/orders/${row.id}`}>{row.order_number}</Link></td><td>{row.customer_name}<br />{row.customer_email}</td><td><StatusBadge status={row.status} /></td><td>{(row.total / 100).toFixed(2)} EGP</td><td>{new Date(row.created_at).toLocaleString()}</td></tr>)}</tbody></table></div><Pager page={page} hasNext={page * 20 < count} onChange={(value) => update('page', String(value))} /></>}</section>
 }
 
-const actionTarget: Record<OrderAction, OrderStatus> = { CONFIRM: 'CONFIRMED', START_PROCESSING: 'PROCESSING', MARK_SHIPPED: 'SHIPPED', MARK_DELIVERED: 'DELIVERED', CANCEL: 'CANCELLED' }
+const actionTarget: Record<OrderAction, OrderStatus> = { CONFIRM: 'CONFIRMED', CONFIRM_PAYMENT: 'PAID', START_PROCESSING: 'PROCESSING', MARK_SHIPPED: 'SHIPPED', MARK_DELIVERED: 'DELIVERED', CANCEL: 'CANCELLED' }
 function actionLabel(action: OrderAction): string { return `admin.actionMap.${action}` }
+function ReceiptPreview({ path }: { path: string }) {
+  const { t } = useTranslation()
+  const [url, setUrl] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    if (!path) return
+    setFailed(false)
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      setUrl(path)
+      return
+    }
+    void supabase.storage.from(RECEIPTS_BUCKET).createSignedUrl(path, 3600).then(({ data, error }) => {
+      if (!error && data?.signedUrl) {
+        setUrl(data.signedUrl)
+      } else {
+        const { data: publicData } = supabase.storage.from(RECEIPTS_BUCKET).getPublicUrl(path)
+        if (publicData?.publicUrl) {
+          setUrl(publicData.publicUrl)
+        } else {
+          setFailed(true)
+        }
+      }
+    }).catch(() => setFailed(true))
+  }, [path])
+
+  if (failed) return <p className="form-alert">{t('admin.receiptLoadFailed')}</p>
+  if (!url) return <p>{t('ui.loading')}</p>
+  return (
+    <div className="admin-receipt-container">
+      <a href={url} target="_blank" rel="noreferrer" title={t('admin.receipt')}>
+        <img src={url} alt={t('admin.receipt')} style={{ maxWidth: '100%', maxHeight: 480, objectFit: 'contain', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+      </a>
+      <p style={{ marginTop: '0.5rem' }}>
+        <a href={url} target="_blank" rel="noreferrer" style={{ fontSize: '0.875rem', textDecoration: 'underline' }}>
+          {t('admin.viewFullReceipt')}
+        </a>
+      </p>
+    </div>
+  )
+}
 
 export function OrderDetails({ id }: { id: string }) {
   const { t, i18n } = useTranslation(); const navigate = useNavigate(); const [order, setOrder] = useState<OrderDetail | null>(null); const [notes, setNotes] = useState<NoteRow[]>([]); const [note, setNote] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [action, setAction] = useState<OrderAction | null>(null); const [reason, setReason] = useState(''); const [tracking, setTracking] = useState(''); const [submitting, setSubmitting] = useState(false); const [toast, setToast] = useState(false)
   const load = async () => { setLoading(true); setError(null); const [orderResult, noteResult] = await Promise.all([supabase.from('orders').select('*, order_lines(*), order_status_history(*)').eq('id', id).maybeSingle(), supabase.from('order_admin_notes').select('*').eq('order_id', id).order('created_at', { ascending: true })]); if (orderResult.error || !orderResult.data) setError(apiCode(orderResult.error?.message ?? 'NOT_FOUND')); else setOrder(orderResult.data as OrderDetail); if (!noteResult.error) setNotes((noteResult.data ?? []) as NoteRow[]); setLoading(false) }
   useEffect(() => { void load() }, [id])
   const addNote = async (event: FormEvent) => { event.preventDefault(); const value = note.trim(); if (value.length < 1 || value.length > 1000) return; const result = await supabase.from('order_admin_notes').insert({ order_id: id, note: value }); if (result.error) setError(apiCode(result.error.message)); else { setNote(''); await load() } }
-  const submitAction = async () => { if (!order || !action) return; setSubmitting(true); const result = await supabase.rpc('admin_transition_order', { p_order_id: id, p_expected_from: order.status, p_to: actionTarget[action], p_reason: reason.trim() || null, p_tracking: tracking.trim() || null }); if (result.error) { setError(apiCode(result.error.message)); if (result.error.message === 'ORDER_STATUS_CHANGED') await load() } else { setAction(null); setReason(''); setTracking(''); setToast(true); await load() } setSubmitting(false) }
+  const submitAction = async () => { if (!order || !action) return; setSubmitting(true); const result = action === 'CONFIRM_PAYMENT' ? await supabase.rpc('admin_confirm_manual_payment', { p_order_id: id }) : order.status === 'PAID' && action === 'START_PROCESSING' ? await supabase.rpc('admin_transition_paid_order', { p_order_id: id }) : await supabase.rpc('admin_transition_order', { p_order_id: id, p_expected_from: order.status, p_to: actionTarget[action], p_reason: reason.trim() || null, p_tracking: tracking.trim() || null }); if (result.error) { setError(apiCode(result.error.message)); if (result.error.message === 'ORDER_STATUS_CHANGED') await load() } else { setAction(null); setReason(''); setTracking(''); setToast(true); await load() } setSubmitting(false) }
   if (loading) return <section className="admin-page"><div className="admin-skeleton" /></section>
   if (error && !order) return <section className="admin-page"><AdminError value={error} retry={() => void load()} /></section>
   if (!order) return null
   const actions = getLegalActions(order.status, 'ADMIN')
-  return <section className="admin-page"><div className="admin-page-title"><h1>{order.order_number}</h1><button onClick={() => navigate('/admin/orders')}>{t('admin.backToOrders')}</button></div>{error && <AdminError value={error} retry={() => void load()} />}{toast && <Toast onDismiss={() => setToast(false)}>{t('messages.ORDER_STATUS_UPDATED')}</Toast>}<div className="admin-card"><p>{t('admin.customer')}: {order.customer_name} · {order.customer_email}</p><p>{t('admin.phone')}: {order.address_snapshot.phone}</p><p>{t('admin.address')}: {order.address_snapshot.fullName ?? order.address_snapshot.full_name}, {order.address_snapshot.city}, {order.address_snapshot.governorate}</p><p>{t('admin.status')}: <StatusBadge status={order.status} /></p><p>{t('admin.payment')}: {order.payment_method} · {t('admin.tracking')}: {order.tracking_number ?? '—'}</p></div><div className="admin-card"><h2>{t('admin.lines')}</h2>{order.order_lines.map((line) => <div className="summary-line" key={line.id}><span>{i18n.language === 'ar' ? line.name_ar_snapshot : line.name_en_snapshot} × {line.quantity}</span><span>{(line.line_total / 100).toFixed(2)} EGP</span></div>)}<div className="totals"><p>{  t('cart.subtotal')}: {(order.subtotal / 100).toFixed(2)} EGP</p><p>{t('admin.shipping')}: {(order.shipping_fee / 100).toFixed(2)} EGP</p><strong>{t('admin.total')}: {(order.total / 100).toFixed(2)} EGP</strong></div></div><div className="admin-action-bar">{actions.map((item) => <button key={item} disabled={submitting} onClick={() => setAction(item)}>{t(actionLabel(item))}</button>)}</div><div className="admin-card"><h2>{t('admin.timeline')}</h2><ol className="timeline">{order.order_status_history.map((entry) => <li key={`${entry.created_at}-${entry.to_status}`}><span>{entry.from_status ? `${t(`orderStatus.${entry.from_status}`)} → ` : ''}{t(`orderStatus.${entry.to_status}`)}{entry.reason ? ` — ${entry.reason}` : ''}</span><time>{new Date(entry.created_at).toLocaleString()}</time></li>)}</ol>{order.cancel_reason && <p>{t('admin.cancelReason')}: {order.cancel_reason}</p>}</div><div className="admin-card"><h2>{t('admin.internalNotes')}</h2>{notes.map((item) => <p key={item.id}>{item.note}<small> · {new Date(item.created_at).toLocaleString()}</small></p>)}<form onSubmit={(event) => void addNote(event)}><textarea maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)} aria-label={t('admin.note')} /><button disabled={!note.trim()}>{t('admin.addNote')}</button></form></div><Dialog open={action !== null} title={action ? t(actionLabel(action)) : ''} onClose={() => setAction(null)}><p>{action === 'CANCEL' ? t('admin.cancelWarning') : t('admin.confirmAction')}</p>{action === 'CANCEL' && <textarea required value={reason} onChange={(event) => setReason(event.target.value)} aria-label={t('admin.reason')} placeholder={t('admin.reason')} />}{action === 'MARK_SHIPPED' && <input maxLength={50} value={tracking} onChange={(event) => setTracking(event.target.value)} aria-label={t('admin.tracking')} placeholder={t('admin.tracking')} />}<button disabled={submitting || (action === 'CANCEL' && !reason.trim())} onClick={() => void submitAction()}>{t('admin.confirm')}</button></Dialog></section>
+  return <section className="admin-page"><div className="admin-page-title"><h1>{order.order_number}</h1><button onClick={() => navigate('/admin/orders')}>{t('admin.backToOrders')}</button></div>{error && <AdminError value={error} retry={() => void load()} />}{toast && <Toast onDismiss={() => setToast(false)}>{t('messages.ORDER_STATUS_UPDATED')}</Toast>}<div className="admin-card"><p>{t('admin.customer')}: {order.customer_name} · {order.customer_email}</p><p>{t('admin.phone')}: {order.address_snapshot.phone}</p><p>{t('admin.address')}: {order.address_snapshot.fullName ?? order.address_snapshot.full_name}, {order.address_snapshot.city}, {order.address_snapshot.governorate}</p><p>{t('admin.status')}: <StatusBadge status={order.status} /></p><p>{t('admin.payment')}: {order.payment_method} · {t('admin.tracking')}: {order.tracking_number ?? '—'}</p></div>{(order.receipt_url || order.receipt_path) && <div className="admin-card"><h2>{t('admin.receipt')}</h2><ReceiptPreview path={(order.receipt_url || order.receipt_path) ?? ''} /></div>}<div className="admin-card"><h2>{t('admin.lines')}</h2>{order.order_lines.map((line) => <div className="summary-line" key={line.id}><span>{i18n.language === 'ar' ? line.name_ar_snapshot : line.name_en_snapshot} × {line.quantity}</span><span>{(line.line_total / 100).toFixed(2)} EGP</span></div>)}<div className="totals"><p>{  t('cart.subtotal')}: {(order.subtotal / 100).toFixed(2)} EGP</p><p>{t('admin.shipping')}: {(order.shipping_fee / 100).toFixed(2)} EGP</p><strong>{t('admin.total')}: {(order.total / 100).toFixed(2)} EGP</strong></div></div><div className="admin-action-bar">{actions.map((item) => <button key={item} disabled={submitting} onClick={() => setAction(item)}>{t(actionLabel(item))}</button>)}</div><div className="admin-card"><h2>{t('admin.timeline')}</h2><ol className="timeline">{order.order_status_history.map((entry) => <li key={`${entry.created_at}-${entry.to_status}`}><span>{entry.from_status ? `${t(`orderStatus.${entry.from_status}`)} → ` : ''}{t(`orderStatus.${entry.to_status}`)}{entry.reason ? ` — ${entry.reason}` : ''}</span><time>{new Date(entry.created_at).toLocaleString()}</time></li>)}</ol>{order.cancel_reason && <p>{t('admin.cancelReason')}: {order.cancel_reason}</p>}</div><div className="admin-card"><h2>{t('admin.internalNotes')}</h2>{notes.map((item) => <p key={item.id}>{item.note}<small> · {new Date(item.created_at).toLocaleString()}</small></p>)}<form onSubmit={(event) => void addNote(event)}><textarea maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)} aria-label={t('admin.note')} /><button disabled={!note.trim()}>{t('admin.addNote')}</button></form></div><Dialog open={action !== null} title={action ? t(actionLabel(action)) : ''} onClose={() => setAction(null)}><p>{action === 'CANCEL' ? t('admin.cancelWarning') : t('admin.confirmAction')}</p>{action === 'CANCEL' && <textarea required value={reason} onChange={(event) => setReason(event.target.value)} aria-label={t('admin.reason')} placeholder={t('admin.reason')} />}{action === 'MARK_SHIPPED' && <input maxLength={50} value={tracking} onChange={(event) => setTracking(event.target.value)} aria-label={t('admin.tracking')} placeholder={t('admin.tracking')} />}<button disabled={submitting || (action === 'CANCEL' && !reason.trim())} onClick={() => void submitAction()}>{t('admin.confirm')}</button></Dialog></section>
 }
 
 export function Users() {
@@ -70,9 +176,9 @@ export function UserDetails({ id }: { id: string }) {
 
 export function Dashboard() {
   const { t } = useTranslation(); const [data, setData] = useState<{ orders: Record<OrderStatus, number>; lowStock: number; outOfStock: number } | null>(null); const [latest, setLatest] = useState<OrderListRow[]>([]); const [error, setError] = useState<string | null>(null)
-  const load = async () => { const [counts, orders] = await Promise.all([supabase.rpc('admin_dashboard_counts'), supabase.from('orders').select('id,order_number,status,total,customer_name,customer_email,address_snapshot,created_at').order('created_at', { ascending: false }).limit(10)]); if (counts.error || orders.error) setError(apiCode(counts.error?.message ?? orders.error?.message)); else { setData(normalizeDashboardCounts(counts.data)); setLatest((orders.data ?? []) as OrderListRow[]) } }; useEffect(() => { void load() }, [])
+  const load = async () => { const [counts, orders] = await Promise.all([supabase.rpc('admin_dashboard_counts'), supabase.from('orders').select('id,order_number,status,total,customer_name,customer_email,address_snapshot,created_at,receipt_path,receipt_url').order('created_at', { ascending: false }).limit(10)]); if (counts.error || orders.error) setError(apiCode(counts.error?.message ?? orders.error?.message)); else { setData(normalizeDashboardCounts(counts.data)); setLatest((orders.data ?? []) as OrderListRow[]) } }; useEffect(() => { void load() }, [])
   if (error) return <section className="admin-page"><AdminError value={error} retry={() => void load()} /></section>; if (!data) return <section className="admin-page"><div className="admin-skeleton" /></section>
-  return <section className="admin-page"><div className="admin-page-title"><h1>{t('admin.dashboard')}</h1></div><div className="admin-dashboard-grid">{adminOrderStatuses.map((status) => <Link className={status === 'PENDING' ? 'admin-stat pending' : 'admin-stat'} key={status} to={`/admin/orders?status=${status}`}><strong>{data.orders[status]}</strong><span>{t(`orderStatus.${status}`)}</span></Link>)}<Link className="admin-stat" to="/admin/inventory?availability=LOW_STOCK"><strong>{data.lowStock}</strong><span>{t('admin.lowStock')}</span></Link><Link className="admin-stat" to="/admin/inventory?availability=OUT_OF_STOCK"><strong>{data.outOfStock}</strong><span>{t('admin.outOfStock')}</span></Link></div><div className="admin-card admin-latest-orders"><div className="admin-section-heading"><h2>{t('admin.latestOrders')}</h2><Link to="/admin/orders">{t('admin.viewAll')}</Link></div>{latest.length === 0 ? <p className="admin-muted">{t('admin.emptyOrders')}</p> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th scope="col">{t('admin.orderNumber')}</th><th scope="col">{t('admin.customer')}</th><th scope="col">{t('admin.status')}</th><th scope="col">{t('admin.total')}</th><th scope="col">{t('admin.date')}</th></tr></thead><tbody>{latest.map((row) => <tr key={row.id}><td><Link to={`/admin/orders/${row.id}`}>{row.order_number}</Link></td><td><span>{row.customer_name}</span><small>{row.customer_email}</small></td><td><StatusBadge status={row.status} /></td><td>{(row.total / 100).toFixed(2)} EGP</td><td>{new Date(row.created_at).toLocaleString()}</td></tr>)}</tbody></table></div>}</div></section>
+  return <section className="admin-page"><div className="admin-page-title"><h1>{t('admin.dashboard')}</h1></div><div className="admin-dashboard-grid">{adminOrderStatuses.map((status) => <Link className={status === 'PENDING' ? 'admin-stat pending' : 'admin-stat'} key={status} to={`/admin/orders?status=${status}`}><strong>{data.orders[status]}</strong><span>{t(`orderStatus.${status}`)}</span></Link>)}<Link className="admin-stat" to="/admin/inventory?availability=LOW_STOCK"><strong>{data.lowStock}</strong><span>{t('admin.lowStock')}</span></Link><Link className="admin-stat" to="/admin/inventory?availability=OUT_OF_STOCK"><strong>{data.outOfStock}</strong><span>{t('admin.outOfStock')}</span></Link></div><div className="admin-card admin-latest-orders"><div className="admin-section-heading"><h2>{t('admin.latestOrders')}</h2><Link to="/admin/orders">{t('admin.viewAll')}</Link></div>{latest.length === 0 ? <p className="admin-muted">{t('admin.emptyOrders')}</p> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th scope="col">{t('admin.orderImage')}</th><th scope="col">{t('admin.orderNumber')}</th><th scope="col">{t('admin.customer')}</th><th scope="col">{t('admin.status')}</th><th scope="col">{t('admin.total')}</th><th scope="col">{t('admin.date')}</th></tr></thead><tbody>{latest.map((row) => <tr key={row.id}><td><OrderThumbnail url={row.receipt_url} path={row.receipt_path} orderNumber={row.order_number} /></td><td><Link to={`/admin/orders/${row.id}`}>{row.order_number}</Link></td><td><span>{row.customer_name}</span><small>{row.customer_email}</small></td><td><StatusBadge status={row.status} /></td><td>{(row.total / 100).toFixed(2)} EGP</td><td>{new Date(row.created_at).toLocaleString()}</td></tr>)}</tbody></table></div>}</div></section>
 }
 
 export function AuditTrail() {

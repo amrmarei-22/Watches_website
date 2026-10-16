@@ -14,7 +14,7 @@ describe('admin helpers', () => {
 
   it('defaults missing dashboard statuses to zero', () => {
     const counts = normalizeDashboardCounts({ orders_by_status: { PENDING: 2 }, low_stock: null })
-    expect(counts.orders).toEqual({ PENDING: 2, CONFIRMED: 0, PROCESSING: 0, SHIPPED: 0, DELIVERED: 0, CANCELLED: 0 })
+    expect(counts.orders).toEqual({ PENDING: 2, PENDING_VERIFICATION: 0, PAID: 0, CONFIRMED: 0, PROCESSING: 0, SHIPPED: 0, DELIVERED: 0, CANCELLED: 0 })
     expect(counts.lowStock).toBe(0)
     expect(counts.outOfStock).toBe(0)
   })

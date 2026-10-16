@@ -1,11 +1,13 @@
 # Order States
 
 ## 1. Statuses
-`PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED`
+`PENDING, PENDING_VERIFICATION, PAID, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED`
 
 | Status | Meaning |
 |--------|---------|
 | PENDING | Order placed by customer; awaiting admin review |
+| PENDING_VERIFICATION | Manual transfer receipt uploaded; awaiting admin payment verification |
+| PAID | Manual transfer verified by admin; ready for processing |
 | CONFIRMED | Admin verified the order (e.g., phoned the customer) |
 | PROCESSING | Being prepared/packed |
 | SHIPPED | Handed to courier |
@@ -15,6 +17,8 @@
 ## 2. Transition table (exhaustive — everything not listed is illegal)
 | From | To | Actor | Required input | Side effects |
 |------|----|-------|----------------|--------------|
+| PENDING_VERIFICATION | PAID | ADMIN | — | history entry |
+| PAID | PROCESSING | ADMIN | — | history entry |
 | PENDING | CONFIRMED | ADMIN | — | history entry |
 | PENDING | CANCELLED | CUSTOMER (own) or ADMIN | ADMIN: reason required. CUSTOMER: reason optional | restore stock |
 | CONFIRMED | PROCESSING | ADMIN | — | history entry |
@@ -44,6 +48,8 @@ PENDING → CONFIRMED → PROCESSING → SHIPPED → DELIVERED
 | Status | Customer actions | Admin actions |
 |--------|------------------|---------------|
 | PENDING | Cancel | Confirm, Cancel |
+| PENDING_VERIFICATION | — | Confirm payment |
+| PAID | — | Start processing |
 | CONFIRMED | — | Start processing, Cancel |
 | PROCESSING | — | Mark shipped, Cancel |
 | SHIPPED | — | Mark delivered |

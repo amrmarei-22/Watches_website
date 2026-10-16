@@ -2,6 +2,7 @@ import type { OrderStatus, UserRole } from './types'
 
 export type OrderAction =
   | 'CONFIRM'
+  | 'CONFIRM_PAYMENT'
   | 'CANCEL'
   | 'START_PROCESSING'
   | 'MARK_SHIPPED'
@@ -22,6 +23,14 @@ export interface OrderTransition {
 }
 
 const transitions: readonly OrderTransition[] = [
+  {
+    from: 'PENDING_VERIFICATION',
+    to: 'PAID',
+    actor: 'ADMIN',
+    action: 'CONFIRM_PAYMENT',
+    reasonRequired: false,
+    trackingAllowed: false,
+  },
   {
     from: 'PENDING',
     to: 'CONFIRMED',
@@ -90,6 +99,8 @@ const transitions: readonly OrderTransition[] = [
 
 const actionsByStatus: Readonly<Record<OrderStatus, readonly OrderAction[]>> = {
   PENDING: ['CANCEL', 'CONFIRM'],
+  PENDING_VERIFICATION: ['CONFIRM_PAYMENT'],
+  PAID: ['START_PROCESSING'],
   CONFIRMED: ['START_PROCESSING', 'CANCEL'],
   PROCESSING: ['MARK_SHIPPED', 'CANCEL'],
   SHIPPED: ['MARK_DELIVERED'],

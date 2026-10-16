@@ -1,7 +1,7 @@
 # Supabase setup (10 minutes)
 
 1. https://supabase.com → **New project** (choose the closest region, set a strong DB password and save it).
-2. **SQL Editor** → run, in order, each file's full content: `001_schema.sql`, `002_functions.sql`, `003_security.sql` (or just run `setup_all.sql` once).
+2. **SQL Editor** → run, in order, each file's full content: `001_schema.sql`, `002_functions.sql`, `003_security.sql`, `004_manual_payment.sql` (or run `setup_all.sql` once and then `004_manual_payment.sql`).
 3. Run `seed.sql` (sample products — development only).
 4. **Authentication → Providers → Email**: keep "Confirm email" ON. (Dev: built-in email is rate-limited; for production add custom SMTP.)
 5. **Authentication → URL Configuration**: Site URL = `http://localhost:5173` (add the production URL later).

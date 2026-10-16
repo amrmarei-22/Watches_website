@@ -15,6 +15,10 @@ import { supabase } from '../lib/supabaseClient'
 import { checkoutErrorMessage, IdempotencyKeyLifecycle, mapCheckoutError, orderTotalPreview } from '../features/orders/orderLogic'
 import { getProductImageUrl } from '../features/catalog/imageUrl'
 import type { Address } from '../domain/types'
+import { MANUAL_PAYMENT_ACCOUNT, MAX_RECEIPT_MB, RECEIPTS_BUCKET } from '../config/businessConfig'
+import { ManualPaymentSection } from '../components/ManualPaymentSection'
+import { canPlaceManualOrder, validateReceiptFile } from '../features/checkoutLogic'
+import { AlertCircle } from 'lucide-react'
 
 let checkoutDraft: AddressInput | undefined
 const lifecycle = new IdempotencyKeyLifecycle()
@@ -29,18 +33,185 @@ function logCheckoutFailure(step: string, error: { code?: string; message?: stri
 function Summary({ cart, shippingFee }: { cart: ReturnType<typeof useCart>; shippingFee: number }) { const { t, i18n } = useTranslation(); const preview = orderTotalPreview(cart.items.map((item) => ({ unitPriceSnapshot: item.product.price, quantity: item.quantity })), shippingFee); return <aside className="checkout-summary"><details open><summary>{t('checkout.summary')}</summary>{cart.items.map((item) => <div className="summary-line" key={item.product.id}><img src={getProductImageUrl(item.product.images[0]?.path ?? '')} alt="" width="56" height="70" /><span>{i18n.language === 'ar' ? item.product.nameAr : item.product.nameEn} × {item.quantity}</span><strong>{formatMoney(item.product.price * item.quantity, i18n.language as 'ar' | 'en')}</strong></div>)}<dl className="totals"><div><dt>{t('cart.subtotal')}</dt><dd>{formatMoney(preview.subtotal, i18n.language as 'ar' | 'en')}</dd></div><div><dt>{t('orders.shippingFee')}</dt><dd>{formatMoney(preview.shippingFee, i18n.language as 'ar' | 'en')}</dd></div><div><dt>{t('orders.total')}</dt><dd>{formatMoney(preview.total, i18n.language as 'ar' | 'en')}</dd></div></dl></details></aside> }
 
 export function CheckoutPage() {
-  const { t, i18n } = useTranslation(); const navigate = useNavigate(); const cart = useCart(); const auth = useAuthState(); const [addresses, setAddresses] = useState<Address[]>([]); const [selected, setSelected] = useState<string | null>(null); const [step, setStep] = useState<1 | 2>(1); const [loading, setLoading] = useState(true); const [failed, setFailed] = useState(false); const [adding, setAdding] = useState(false); const [showNewAddress, setShowNewAddress] = useState(false); const [submitting, setSubmitting] = useState(false); const [changes, setChanges] = useState(cart.changes); const [message, setMessage] = useState<string | null>(null); const [shippingFee, setShippingFee] = useState(0)
+  const { t, i18n } = useTranslation(); const navigate = useNavigate(); const cart = useCart(); const auth = useAuthState(); const [addresses, setAddresses] = useState<Address[]>([]); const [selected, setSelected] = useState<string | null>(null); const [step, setStep] = useState<1 | 2>(1); const [loading, setLoading] = useState(true); const [failed, setFailed] = useState(false); const [adding, setAdding] = useState(false); const [showNewAddress, setShowNewAddress] = useState(false); const [submitting, setSubmitting] = useState(false); const [changes, setChanges] = useState(cart.changes); const [message, setMessage] = useState<string | null>(null); const [shippingFee, setShippingFee] = useState(0); const [receipt, setReceipt] = useState<File | null>(null)
   const load = () => { setLoading(true); setFailed(false); setMessage(null); void Promise.all([supabase.from('addresses').select('*').order('is_default', { ascending: false }).order('created_at', { ascending: true }), supabase.from('app_settings').select('shipping_flat_fee').eq('id', 1).single()]).then(([addressResult, settingsResult]) => { if (addressResult.error || settingsResult.error) { if (addressResult.error) logCheckoutFailure('addresses.read', addressResult.error, 'Reload checkout addresses'); setFailed(true) } else { const rows = (addressResult.data ?? []) as AddressRow[]; const mapped = rows.map(mapAddress); setAddresses(mapped); setSelected(rows.find((address) => address.is_default)?.id ?? rows[0]?.id ?? null); setShippingFee((settingsResult.data as { shipping_flat_fee: number }).shipping_flat_fee) } }).finally(() => setLoading(false)) }
   useEffect(() => { void cart.revalidate((error) => logCheckoutFailure('validate_cart', error, 'Revalidate cart on checkout load')).then(setChanges).catch(() => setMessage('CHECKOUT_ERROR')); load() }, [])
   const selectedAddress = addresses.find((address) => address.id === selected)
   const addAddress = async (value: AddressInput) => { setMessage(null); setAdding(true); const result = await supabase.from('addresses').insert({ full_name: value.fullName, phone: value.phone, governorate: value.governorate, city: value.city, street: value.street, building: value.building, notes: value.notes }).select().single(); if (result.error) { logCheckoutFailure('address_insert', result.error, 'Use snake_case address columns'); setMessage('CHECKOUT_ERROR') } else { const address = mapAddress(result.data as AddressRow); if (!addresses.length) await supabase.rpc('set_default_address', { p_address_id: address.id }); setAddresses((current) => [...current, address]); setSelected(address.id); lifecycle.enterReview(); setStep(2) } setAdding(false) }
   const goReview = async () => { if (!selected) return; setMessage(null); const result = await cart.revalidate((error) => logCheckoutFailure('validate_cart', error, 'Revalidate cart before review')).catch(() => null); if (result === null) { setMessage('CHECKOUT_ERROR'); return } setChanges(result); lifecycle.enterReview(); setStep(2) }
   const [confirmPlace, setConfirmPlace] = useState(false)
-  const place = async () => { if (!selected || submitting) return; setSubmitting(true); setConfirmPlace(false); setMessage(null); const result = await supabase.rpc('place_order', { p_idempotency_key: lifecycle.current(), p_address_id: selected, p_payment_method: 'COD' }); if (result.error) { logCheckoutFailure('place_order', result.error, 'Check UUID idempotency key and address id'); const action = mapCheckoutError(result.error); if (action.kind === 'stockConflict') { navigate(`/${i18n.language}/cart`, { state: { highlightProductIds: action.productIds } }); setSubmitting(false); return } if (action.kind === 'priceChanged') { const next = await cart.revalidate((error) => logCheckoutFailure('validate_cart', error, 'Revalidate after price conflict')); setChanges(next); setSubmitting(false); return } if (action.kind === 'emptyCart') { setMessage('CART_EMPTY'); setSubmitting(false); return } if (action.kind === 'sessionExpired') { checkoutDraft = selectedAddress ? addrInput(selectedAddress) : checkoutDraft; navigate(`/${i18n.language}/login?returnTo=${encodeURIComponent(`/${i18n.language}/checkout`)}`); setSubmitting(false); return } setMessage(checkoutErrorMessage(result.error)); setSubmitting(false); return }; lifecycle.discardAfterSuccess(); await cart.revalidate((error) => logCheckoutFailure('validate_cart', error, 'Refresh cart after successful order')); const data = result.data as { order_id: string }; navigate(`/${i18n.language}/checkout/confirmation/${data.order_id}`, { replace: true }) }
+  const place = async () => {
+    if (!selected || submitting) return
+    if (!receipt) {
+      setMessage('RECEIPT_REQUIRED')
+      return
+    }
+    const validation = validateReceiptFile(receipt, MAX_RECEIPT_MB)
+    if (!validation.valid) {
+      setMessage(validation.error)
+      return
+    }
+    setSubmitting(true)
+    setConfirmPlace(false)
+    setMessage(null)
+
+    const userResult = await supabase.auth.getUser()
+    const user = userResult.data.user
+    if (userResult.error || !user) {
+      setMessage('AUTH_SESSION_EXPIRED')
+      setSubmitting(false)
+      return
+    }
+
+    // 1. Upload receipt to storage bucket ('receipts')
+    const extension = receipt.type === 'image/png' ? 'png' : receipt.type === 'image/webp' ? 'webp' : 'jpg'
+    const receiptPath = `${user.id}/${crypto.randomUUID()}.${extension}`
+
+    const upload = await supabase.storage
+      .from(RECEIPTS_BUCKET)
+      .upload(receiptPath, receipt, { contentType: receipt.type, upsert: false })
+
+    if (upload.error) {
+      logCheckoutFailure('receipt_upload', upload.error, 'Upload receipt before placing order')
+      setMessage('RECEIPT_UPLOAD_FAILED')
+      setSubmitting(false)
+      return
+    }
+
+    // 2. Obtain Public URL for the receipt image
+    const { data: publicUrlData } = supabase.storage
+      .from(RECEIPTS_BUCKET)
+      .getPublicUrl(receiptPath)
+    const receiptUrl = publicUrlData?.publicUrl || receiptPath
+
+    // 3. Prepare order payload and identifiers
+    const preview = orderTotalPreview(
+      cart.items.map((item) => ({ unitPriceSnapshot: item.product.price, quantity: item.quantity })),
+      shippingFee
+    )
+    const idempotencyKey = lifecycle.current() || crypto.randomUUID()
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000)
+    const orderNumber = `ORD-${todayStr}-${randomSuffix}`
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const customerName = profile?.name || selectedAddress?.fullName || ''
+    const customerEmail = user.email || ''
+
+    // 4. Save directly into `orders` table using standard .insert()
+    const { data: insertedOrder, error: orderInsertError } = await supabase
+      .from('orders')
+      .insert({
+        order_number: orderNumber,
+        user_id: user.id,
+        status: 'PENDING',
+        payment_method: 'MANUAL',
+        receipt_path: receiptPath,
+        receipt_url: receiptUrl,
+        subtotal: preview.subtotal,
+        shipping_fee: preview.shippingFee,
+        total: preview.total,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        address_snapshot: selectedAddress,
+        idempotency_key: idempotencyKey,
+      })
+      .select('id, order_number')
+      .single()
+
+    let finalOrderId = insertedOrder?.id
+
+    // Fallback: If direct insert encounters a table permission error, try RPC
+    if (orderInsertError || !finalOrderId) {
+      logCheckoutFailure('order_insert', orderInsertError, 'Direct insert failed, attempting RPC fallback')
+      const rpcResult = await supabase.rpc('place_manual_order', {
+        p_idempotency_key: idempotencyKey,
+        p_address_id: selected,
+        p_receipt_path: receiptPath,
+        p_receipt_url: receiptUrl,
+      })
+
+      if (rpcResult.error) {
+        logCheckoutFailure('place_manual_order', rpcResult.error, 'Both direct insert and RPC failed')
+        await supabase.storage.from(RECEIPTS_BUCKET).remove([receiptPath])
+        const action = mapCheckoutError(rpcResult.error)
+        if (action.kind === 'stockConflict') {
+          navigate(`/${i18n.language}/cart`, { state: { highlightProductIds: action.productIds } })
+          setSubmitting(false)
+          return
+        }
+        if (action.kind === 'priceChanged') {
+          const next = await cart.revalidate((error) =>
+            logCheckoutFailure('validate_cart', error, 'Revalidate after price conflict')
+          )
+          setChanges(next)
+          setSubmitting(false)
+          return
+        }
+        if (action.kind === 'emptyCart') {
+          setMessage('CART_EMPTY')
+          setSubmitting(false)
+          return
+        }
+        if (action.kind === 'sessionExpired') {
+          checkoutDraft = selectedAddress ? addrInput(selectedAddress) : checkoutDraft
+          navigate(`/${i18n.language}/login?returnTo=${encodeURIComponent(`/${i18n.language}/checkout`)}`)
+          setSubmitting(false)
+          return
+        }
+        setMessage(orderInsertError?.message || checkoutErrorMessage(rpcResult.error))
+        setSubmitting(false)
+        return
+      }
+
+      const rpcData = rpcResult.data as { order_id: string }
+      finalOrderId = rpcData.order_id
+    } else {
+      // 5. Insert order items into `order_lines` table directly
+      const orderLines = cart.items.map((item) => ({
+        order_id: finalOrderId,
+        product_id: item.product.id,
+        sku_snapshot: item.product.sku,
+        name_ar_snapshot: item.product.nameAr,
+        name_en_snapshot: item.product.nameEn,
+        unit_price_snapshot: item.product.price,
+        quantity: item.quantity,
+        line_total: item.product.price * item.quantity,
+      }))
+
+      const { error: linesError } = await supabase.from('order_lines').insert(orderLines)
+      if (linesError) {
+        logCheckoutFailure('order_lines_insert', linesError, 'Insert order lines error')
+      }
+
+      // 6. Record status history entry (silent catch if restricted)
+      void supabase.from('order_status_history').insert({
+        order_id: finalOrderId,
+        from_status: null,
+        to_status: 'PENDING',
+        actor_id: user.id,
+        actor_role: 'CUSTOMER',
+      })
+
+      // 7. Clear user cart items in Supabase
+      void supabase.from('cart_items').delete().eq('user_id', user.id)
+    }
+
+    lifecycle.discardAfterSuccess()
+    await cart.revalidate((error) =>
+      logCheckoutFailure('validate_cart', error, 'Refresh cart after successful order')
+    )
+    navigate(`/${i18n.language}/checkout/confirmation/${finalOrderId}`, { replace: true })
+  }
   if (loading) return <section className="container checkout-page"><Skeleton className="listing-skeleton" /></section>
   if (failed) return <ErrorState message={t('messages.CHECKOUT_ERROR')} action={t('actions.tryAgain')} onAction={load} />
   if (!cart.items.length) return <EmptyState message={t('messages.CART_EMPTY')} action={t('actions.continueShopping')} onAction={() => navigate(`/${i18n.language}/shop`)} />
-  return <section className="container checkout-page"><Link className="checkout-back-link" to={`/${i18n.language}/cart`}><span className="checkout-back-arrow" aria-hidden="true">←</span> {t('cart.back')}</Link><h1 className="page-heading">{t('pages.checkout')}</h1><ol className="checkout-steps" aria-label={t('pages.checkout')}><li className={step === 1 ? 'active' : 'complete'} aria-current={step === 1 ? 'step' : undefined}><span className="step-number">{step > 1 ? '✓' : '1'}</span>{t('checkout.addressStep')}</li><li className={step === 2 ? 'active' : ''} aria-current={step === 2 ? 'step' : undefined}><span className="step-number">2</span>{t('checkout.reviewStep')}</li><li><span className="step-number">3</span>{t('checkout.doneStep')}</li></ol><div className="checkout-grid"><div>{message && <div className="form-alert" role="alert">{t(`messages.${message}`, { defaultValue: t('messages.CHECKOUT_ERROR') })}{message === 'AUTH_VERIFY_REQUIRED' && <p><Link to={`/${i18n.language}/verify-email`}>{t('actions.resendLink')}</Link></p>}</div>}{step === 1 ? <>{addresses.length > 0 && <><h2>{t('checkout.chooseAddress')}</h2><div className="address-options">{addresses.map((address) => <label className={`address-option ${selected === address.id ? 'selected' : ''}`} key={address.id}><input type="radio" name="checkout-address" checked={selected === address.id} onChange={() => { setMessage(null); setSelected(address.id); void supabase.rpc('set_default_address', { p_address_id: address.id }) }} /><span className="address-radio" aria-hidden="true" />  <span className="address-copy"><strong>{address.fullName}</strong><span>{t(`governorates.${address.governorate}`)}, {address.city}</span></span>{address.isDefault && <span className="status-badge">{t('account.default')}</span>}</label>)}</div>{!showNewAddress && <Button disabled={!selected} onClick={() => void goReview()}>{t('checkout.reviewOrder')}</Button>}<button type="button" className="checkout-add-address" onClick={() => setShowNewAddress((open) => !open)}>{showNewAddress ? t('checkout.cancelAddAddress') : `＋ ${t('checkout.addAddress')}`}</button></>}{(addresses.length === 0 || showNewAddress) && <div className="checkout-address-form"><h2>{addresses.length ? t('checkout.addAddress') : t('checkout.enterAddress')}</h2><AddressForm initial={checkoutDraft} onInteraction={() => setMessage(null)} onSubmit={(value) => void addAddress(value)} submitting={adding} /></div>}</> : <div className="checkout-review-card"><div className="checkout-review-heading"><span>{t('checkout.reviewStep')}</span><h2>{t('checkout.reviewOrder')}</h2></div>{changes.length > 0 && <div className="form-alert" role="alert">{changes.map((change) => <p key={`${change.code}-${change.productId}`}>{t(`messages.${change.code}`, { name: i18n.language === 'ar' ? change.nameAr : change.nameEn, n: change.n })}</p>)}</div>}<div className="checkout-review-row"><span>{t('checkout.payment')}</span><strong>{t('orders.cashOnDelivery')}</strong></div><div className="checkout-review-row"><span>{t('checkout.enterAddress')}</span><strong>{selectedAddress?.fullName}, {selectedAddress?.city}</strong></div><Button onClick={() => setConfirmPlace(true)} loading={submitting}>{t('checkout.placeOrder')}</Button></div>}</div><Summary cart={cart} shippingFee={shippingFee} /></div><Dialog open={confirmPlace} title={t('checkout.confirmPlaceOrder')} onClose={() => setConfirmPlace(false)}><p>{t('checkout.confirmPlaceOrderMessage')}</p><div className="dialog-actions"><Button variant="secondary" onClick={() => setConfirmPlace(false)}>{t('checkout.cancel')}</Button><Button onClick={() => void place()}>{t('checkout.confirmPlaceOrder')}</Button></div></Dialog></section>
+  return <section className="container checkout-page"><Link className="checkout-back-link" to={`/${i18n.language}/cart`}><span className="checkout-back-arrow" aria-hidden="true">←</span> {t('cart.back')}</Link><h1 className="page-heading">{t('pages.checkout')}</h1><ol className="checkout-steps" aria-label={t('pages.checkout')}><li className={step === 1 ? 'active' : 'complete'} aria-current={step === 1 ? 'step' : undefined}><span className="step-number">{step > 1 ? '✓' : '1'}</span>{t('checkout.addressStep')}</li><li className={step === 2 ? 'active' : ''} aria-current={step === 2 ? 'step' : undefined}><span className="step-number">2</span>{t('checkout.reviewStep')}</li><li><span className="step-number">3</span>{t('checkout.doneStep')}</li></ol><div className="checkout-grid"><div>{message && <div className="form-alert" role="alert">{t(`messages.${message}`, { defaultValue: t('messages.CHECKOUT_ERROR') })}{message === 'AUTH_VERIFY_REQUIRED' && <p><Link to={`/${i18n.language}/verify-email`}>{t('actions.resendLink')}</Link></p>}</div>}{step === 1 ? <>{addresses.length > 0 && <><h2>{t('checkout.chooseAddress')}</h2><div className="address-options">{addresses.map((address) => <label className={`address-option ${selected === address.id ? 'selected' : ''}`} key={address.id}><input type="radio" name="checkout-address" checked={selected === address.id} onChange={() => { setMessage(null); setSelected(address.id); void supabase.rpc('set_default_address', { p_address_id: address.id }) }} /><span className="address-radio" aria-hidden="true" />  <span className="address-copy"><strong>{address.fullName}</strong><span>{t(`governorates.${address.governorate}`)}, {address.city}</span></span>{address.isDefault && <span className="status-badge">{t('account.default')}</span>}</label>)}</div>{!showNewAddress && <Button disabled={!selected} onClick={() => void goReview()}>{t('checkout.reviewOrder')}</Button>}<button type="button" className="checkout-add-address" onClick={() => setShowNewAddress((open) => !open)}>{showNewAddress ? t('checkout.cancelAddAddress') : `＋ ${t('checkout.addAddress')}`}</button></>}{(addresses.length === 0 || showNewAddress) && <div className="checkout-address-form"><h2>{addresses.length ? t('checkout.addAddress') : t('checkout.enterAddress')}</h2><AddressForm initial={checkoutDraft} onInteraction={() => setMessage(null)} onSubmit={(value) => void addAddress(value)} submitting={adding} /></div>}</> : <div className="checkout-review-card"><div className="checkout-review-heading"><span>{t('checkout.reviewStep')}</span><h2>{t('checkout.reviewOrder')}</h2></div>{changes.length > 0 && <div className="form-alert" role="alert">{changes.map((change) => <p key={`${change.code}-${change.productId}`}>{t(`messages.${change.code}`, { name: i18n.language === 'ar' ? change.nameAr : change.nameEn, n: change.n })}</p>)}</div>}<div className="checkout-review-row"><span>{t('checkout.payment')}</span><strong>{t('orders.manualPayment')}</strong></div><ManualPaymentSection accountNumber={MANUAL_PAYMENT_ACCOUNT} receipt={receipt} onReceiptChange={(file) => { setReceipt(file); if (file && (message === 'RECEIPT_REQUIRED' || message === 'RECEIPT_INVALID' || message === 'RECEIPT_INVALID_TYPE' || message === 'RECEIPT_MAX_SIZE')) setMessage(null) }} disabled={submitting} errorMessage={message === 'RECEIPT_REQUIRED' || message === 'RECEIPT_INVALID' || message === 'RECEIPT_INVALID_TYPE' || message === 'RECEIPT_MAX_SIZE' ? t(`messages.${message}`) : null} onClearError={() => { if (message === 'RECEIPT_REQUIRED' || message === 'RECEIPT_INVALID' || message === 'RECEIPT_INVALID_TYPE' || message === 'RECEIPT_MAX_SIZE') setMessage(null) }} /><div className="checkout-review-row"><span>{t('checkout.enterAddress')}</span><strong>{selectedAddress?.fullName}, {selectedAddress?.city}</strong></div>{!receipt && <div className="checkout-receipt-notice" role="note"><AlertCircle size={15} aria-hidden="true" /><span>{t('checkout.receiptRequiredNotice')}</span></div>}<Button disabled={!canPlaceManualOrder(Boolean(receipt), submitting)} onClick={() => { if (!receipt) { setMessage('RECEIPT_REQUIRED'); return } setConfirmPlace(true) }} loading={submitting}>{t('checkout.placeOrder')}</Button></div>}</div><Summary cart={cart} shippingFee={shippingFee} /></div><Dialog open={confirmPlace} title={t('checkout.confirmPlaceOrder')} onClose={() => setConfirmPlace(false)}><p>{t('checkout.confirmPlaceOrderMessage')}</p><div className="dialog-actions"><Button variant="secondary" onClick={() => setConfirmPlace(false)}>{t('checkout.cancel')}</Button><Button onClick={() => void place()}>{t('checkout.confirmPlaceOrder')}</Button></div></Dialog></section>
 }
 
 export function ConfirmationPage() {

@@ -16,7 +16,7 @@ A user has exactly ONE role. An ADMIN does not shop with the same account.
 - **Stock**: integer count of sellable units (>= 0). Never negative.
 - **Availability**: derived value `IN_STOCK | LOW_STOCK | OUT_OF_STOCK` computed from stock + threshold (PRODUCT_STATES).
 - **Product status**: stored value `DRAFT | ACTIVE | ARCHIVED` (PRODUCT_STATES).
-- **Order status**: `PENDING | CONFIRMED | PROCESSING | SHIPPED | DELIVERED | CANCELLED` (ORDER_STATES).
+- **Order status**: `PENDING | PENDING_VERIFICATION | PAID | CONFIRMED | PROCESSING | SHIPPED | DELIVERED | CANCELLED` (ORDER_STATES).
 - **Minor units**: money as integers in piasters.
 - **Line**: one product + quantity inside a cart or order.
 
@@ -27,7 +27,7 @@ User: `id, name, email (unique), phone, passwordHash, role, emailVerified, creat
 
 Address: `id, userId, fullName, phone, governorate, city, street, building, notes`.
 
-Order: `id, orderNumber, userId, status, lines[], subtotal, shippingFee, total, paymentMethod, shippingAddressSnapshot, statusHistory[], createdAt, updatedAt`.
+Order: `id, orderNumber, userId, status, lines[], subtotal, shippingFee, total, paymentMethod, receiptPath, shippingAddressSnapshot, statusHistory[], createdAt, updatedAt`.
 OrderLine: `productId, skuSnapshot, nameSnapshot, unitPriceSnapshot, quantity, lineTotal`.
 StatusHistory entry: `from, to, actorId, actorRole, reason|null, timestamp`.
 

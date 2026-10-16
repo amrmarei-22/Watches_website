@@ -2,6 +2,8 @@ import type { OrderStatus } from '../domain/types'
 
 export const adminOrderStatuses: readonly OrderStatus[] = [
   'PENDING',
+  'PENDING_VERIFICATION',
+  'PAID',
   'CONFIRMED',
   'PROCESSING',
   'SHIPPED',

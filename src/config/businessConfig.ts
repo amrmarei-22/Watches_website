@@ -20,6 +20,11 @@ export const businessConfig = {
   maxImagesPerProduct: 8,
   maxImageMb: 5,
   maxAddressesPerUser: 5,
+  manualPayment: {
+    account: '01000000000',
+    bucket: 'receipts',
+    maxReceiptMb: 5,
+  },
   brand: {
     nameEn: 'Vintage',
     nameAr: 'فينتج',
@@ -56,4 +61,7 @@ export const PASSWORD_RESET_TTL_MINUTES =
 export const MAX_IMAGES_PER_PRODUCT = businessConfig.maxImagesPerProduct
 export const MAX_IMAGE_MB = businessConfig.maxImageMb
 export const MAX_ADDRESSES_PER_USER = businessConfig.maxAddressesPerUser
+export const MANUAL_PAYMENT_ACCOUNT = businessConfig.manualPayment.account
+export const RECEIPTS_BUCKET = businessConfig.manualPayment.bucket
+export const MAX_RECEIPT_MB = businessConfig.manualPayment.maxReceiptMb
 export const brand = businessConfig.brand

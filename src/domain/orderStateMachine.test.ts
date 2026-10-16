@@ -44,6 +44,8 @@ describe('order state machine', () => {
   it.each([
     ['PENDING', 'CUSTOMER', ['CANCEL']],
     ['PENDING', 'ADMIN', ['CANCEL', 'CONFIRM']],
+    ['PENDING_VERIFICATION', 'ADMIN', ['CONFIRM_PAYMENT']],
+    ['PAID', 'ADMIN', ['START_PROCESSING']],
     ['CONFIRMED', 'CUSTOMER', []],
     ['CONFIRMED', 'ADMIN', ['START_PROCESSING', 'CANCEL']],
     ['PROCESSING', 'CUSTOMER', []],

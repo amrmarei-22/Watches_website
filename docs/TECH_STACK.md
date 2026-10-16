@@ -27,14 +27,14 @@ There is no custom server. Authority is enforced by **Row Level Security (RLS) p
 - Clients can NOT directly write: `products.stock`, `orders.status`, `profiles.role`, `profiles.enabled`. These change only through RPC functions below.
 
 ## 3. Database (tables, compact — the real definition is `supabase/migrations/`, which wins over this summary)
-Enums: `product_status(DRAFT,ACTIVE,ARCHIVED)`, `order_status(PENDING,CONFIRMED,PROCESSING,SHIPPED,DELIVERED,CANCELLED)`, `user_role(CUSTOMER,ADMIN)`.
+Enums: `product_status(DRAFT,ACTIVE,ARCHIVED)`, `order_status(PENDING,PENDING_VERIFICATION,PAID,CONFIRMED,PROCESSING,SHIPPED,DELIVERED,CANCELLED)`, `user_role(CUSTOMER,ADMIN)`.
 
 - `profiles(id uuid pk → auth.users, name, phone, role user_role default 'CUSTOMER', enabled bool default true, created_at)`
 - `products(id, sku unique, name_ar, name_en, brand, description_ar, description_en, price int, stock int check(stock>=0), low_stock_override int null, status product_status default 'DRAFT', featured bool, specs jsonb, created_at, updated_at)`
 - `product_images(id, product_id, path, position int, is_primary bool)` (files in Storage bucket `product-images`)
 - `addresses(id, user_id, full_name, phone, governorate, city, street, building, notes, is_default)` max 5 per user (trigger)
 - `cart_items(user_id, product_id, quantity, unit_price_seen, primary key(user_id, product_id))` (no separate carts table)
-- `orders(id, order_number unique, user_id, status, subtotal, shipping_fee, total, payment_method, address_snapshot jsonb, tracking_number null, idempotency_key uuid, created_at, updated_at, unique(user_id, idempotency_key))`
+- `orders(id, order_number unique, user_id, status, subtotal, shipping_fee, total, payment_method, receipt_path null, address_snapshot jsonb, tracking_number null, idempotency_key uuid, created_at, updated_at, unique(user_id, idempotency_key))`
 - `order_lines(id, order_id, product_id, sku_snapshot, name_ar_snapshot, name_en_snapshot, unit_price_snapshot, quantity, line_total)`
 - `order_status_history(id, order_id, from_status, to_status, actor_id, actor_role, reason null, created_at)`
 - `order_admin_notes(id, order_id, admin_id, note, created_at)` append-only

@@ -74,7 +74,7 @@ Every rule has an ID. Code and tests reference these IDs. Constants live in `src
 - 5.2 Concurrency: if two users buy the last unit, exactly one succeeds (use DB row lock or atomic conditional update `stock >= qty`). The other gets `CHECKOUT_STOCK_CONFLICT`.
 - 5.3 Order stores snapshots (name, SKU, unit price, address). Later product/address edits never alter past orders.
 - 5.4 Order number: `WS-YYYYMMDD-NNNNN` (NNNNN = zero-padded daily sequence), unique.
-- 5.5 Payment method v1: `COD` only. Order total = subtotal + shippingFee. Payment is collected on delivery; no payment status tracking in v1.
+- 5.5 Payment methods: `COD` and `MANUAL`. Manual payment is InstaPay / bank transfer / Vodafone Cash. The customer uploads a JPG, PNG or WebP receipt (maximum 5 MB) to the private `receipts` bucket. Manual orders start as `PENDING_VERIFICATION`; an admin confirmation changes them to `PAID`. Order total = subtotal + shippingFee.
 - 5.6 Double-submit protection: placing an order uses an idempotency key; a repeated submit returns the same order and creates no duplicate.
 - 5.7 If the session expires during checkout, see §1.7. No order is created unless the transaction in §5.1 completed.
 - 5.8 Cancellation restores stock: on transition to CANCELLED, add each line's quantity back to its product's stock, in the same transaction, and log it in the inventory log with reason `ORDER_CANCELLED`.

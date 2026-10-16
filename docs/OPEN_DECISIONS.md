@@ -6,7 +6,7 @@ Legend: **[DEFAULT]** = documented working default so docs are complete; Copilot
 |---|----------|--------|-----------------|
 | 1 | Tech stack | **DECIDED** | Vite+React+TS, Supabase backend, see `TECH_STACK.md`. Owner must create the Supabase project and supply keys. |
 | 2 | Languages & direction | **DECIDED** | Arabic (RTL, default) + English (LTR). See `TECH_STACK §8`. |
-| 3 | Payment methods | [DEFAULT] | Cash on Delivery only in v1. Online card = out of scope until confirmed. |
+| 3 | Payment methods | DECIDED | Cash on Delivery and manual payment (InstaPay / bank transfer / Vodafone Cash) with receipt verification. Online card remains out of scope. |
 | 4 | Currency | [DEFAULT] | EGP, stored as integer piasters (1 EGP = 100). |
 | 5 | Shipping fee | [DEFAULT] | Flat fee per order, configurable `SHIPPING_FLAT_FEE`. Value TBD by owner (use 0 until set). |
 | 6 | Shipping coverage | [DEFAULT] | All Egyptian governorates. List in `BUSINESS_RULES §6`. |

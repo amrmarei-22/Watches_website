@@ -13,6 +13,8 @@ export type Availability = (typeof availabilityValues)[number]
 
 export const orderStatuses = [
   'PENDING',
+  'PENDING_VERIFICATION',
+  'PAID',
   'CONFIRMED',
   'PROCESSING',
   'SHIPPED',
@@ -21,7 +23,7 @@ export const orderStatuses = [
 ] as const
 export type OrderStatus = (typeof orderStatuses)[number]
 
-export const paymentMethods = ['COD'] as const
+export const paymentMethods = ['COD', 'MANUAL'] as const
 export type PaymentMethod = (typeof paymentMethods)[number]
 
 export interface ProductSpecs {
@@ -111,6 +113,8 @@ export interface Order {
   shippingFee: number
   total: number
   paymentMethod: PaymentMethod
+  receiptPath: string | null
+  receiptUrl?: string | null
   shippingAddressSnapshot: Address
   statusHistory: StatusHistoryEntry[]
   createdAt: string
