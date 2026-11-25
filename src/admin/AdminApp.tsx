@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
@@ -11,6 +11,7 @@ import { LOW_STOCK_THRESHOLD_DEFAULT, MAX_IMAGES_PER_PRODUCT, MAX_IMAGE_MB, bran
 import type { Availability, ProductStatus } from '../domain/types'
 import { Dashboard as OperationsDashboard, Orders as AdminOrders, OrderDetails, Users as AdminUsers, UserDetails, AuditTrail } from './AdminOperations'
 import { ProductEditPage } from './ProductEditPage'
+import { Menu, X } from 'lucide-react'
 
 type ProductRow = {
   id: string; sku: string; name_ar: string; name_en: string; brand: string; description_ar: string; description_en: string
@@ -32,8 +33,67 @@ function PageTitle({ children, action }: { children: ReactNode; action?: ReactNo
 
 export function AdminLayout() {
   const { t, i18n } = useTranslation(); const { signOut } = useAuthState()
+  const location = useLocation()
+  const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null)
+  const mobileMenuOpen = mobileMenuPath === location.pathname
+  const sidebarRef = useRef<HTMLElement>(null)
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
   const nav = [{ to: '/admin', key: 'dashboard' }, { to: '/admin/products', key: 'products' }, { to: '/admin/inventory', key: 'inventory' }, { to: '/admin/orders', key: 'orders' }, { to: '/admin/users', key: 'users' }, { to: '/admin/audit', key: 'audit' }]
-  return <div className="admin-shell"><aside className="admin-sidebar"><Link to="/admin" className="admin-brand">{i18n.language === 'ar' ? brand.nameAr : brand.nameEn}</Link><nav aria-label={t('admin.navigation')}>{nav.map((item) => <NavLink key={item.to} end={item.to === '/admin'} to={item.to}>{t(`admin.${item.key}`)}</NavLink>)}</nav><div className="admin-sidebar-actions"><button onClick={() => void setLanguage(i18n.language === 'ar' ? 'en' : 'ar')}>{i18n.language === 'ar' ? 'English' : 'العربية'}</button><button onClick={() => void signOut()}>{t('admin.logout')}</button></div></aside><main className="admin-main"><Outlet /></main></div>
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    const root = document.documentElement
+    const previousScrollLock = root.getAttribute('data-scroll-locked')
+    root.dataset.scrollLocked = 'true'
+    const focusable = () => [...(sidebarRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? [])]
+    window.requestAnimationFrame(() => focusable().find((element) => element.closest('nav'))?.focus({ preventScroll: true }))
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setMobileMenuPath(null)
+        mobileMenuButtonRef.current?.focus({ preventScroll: true })
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      if (!items.length) return
+      if (!items.includes(document.activeElement as HTMLElement)) {
+        event.preventDefault()
+        ;(event.shiftKey ? items[items.length - 1] : items[0]).focus()
+      } else if (event.shiftKey && document.activeElement === items[0]) {
+        event.preventDefault()
+        items[items.length - 1].focus()
+      } else if (!event.shiftKey && document.activeElement === items[items.length - 1]) {
+        event.preventDefault()
+        items[0].focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      if (previousScrollLock === null) delete root.dataset.scrollLocked
+      else root.setAttribute('data-scroll-locked', previousScrollLock)
+    }
+  }, [mobileMenuOpen])
+  return <div className="admin-shell">
+    <header className="admin-mobile-header">
+      <Link to="/admin" className="admin-brand">{i18n.language === 'ar' ? brand.nameAr : brand.nameEn}</Link>
+      <button ref={mobileMenuButtonRef} type="button" aria-expanded={mobileMenuOpen} aria-controls="admin-sidebar" aria-label={mobileMenuOpen ? t('ui.close') : t('nav.menu')} onClick={() => setMobileMenuPath(mobileMenuOpen ? null : location.pathname)}>
+        {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+      </button>
+    </header>
+    {mobileMenuOpen && <button className="admin-sidebar-backdrop" type="button" aria-label={t('ui.close')} onClick={() => setMobileMenuPath(null)} />}
+    <aside ref={sidebarRef} id="admin-sidebar" className={`admin-sidebar${mobileMenuOpen ? ' is-open' : ''}`}>
+      <Link to="/admin" className="admin-brand">{i18n.language === 'ar' ? brand.nameAr : brand.nameEn}</Link>
+      <nav aria-label={t('admin.navigation')}>{nav.map((item) => <NavLink key={item.to} end={item.to === '/admin'} to={item.to}>{t(`admin.${item.key}`)}</NavLink>)}</nav>
+      <div className="admin-sidebar-actions">
+        <button onClick={() => void setLanguage(i18n.language === 'ar' ? 'en' : 'ar')}>{i18n.language === 'ar' ? 'English' : 'العربية'}</button>
+        <button onClick={() => void signOut()}>{t('admin.logout')}</button>
+      </div>
+    </aside>
+    <main id="main-content" className="admin-main" data-scroll-container="admin-main" tabIndex={-1}><Outlet /></main>
+  </div>
 }
 
 function Placeholder({ title }: { title: string }) { return <section className="admin-page"><PageTitle>{title}</PageTitle><div className="admin-card"><p>{useTranslation().t('admin.placeholder')}</p></div></section> }

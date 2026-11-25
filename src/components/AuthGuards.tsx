@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthState } from '../hooks/useAuthState'
 
@@ -25,9 +25,9 @@ export function RequireVerified() {
 }
 
 export function RequireAdmin() {
-  const { role, loading } = useAuthState(); const { t } = useTranslation()
+  const { role, loading } = useAuthState(); const { t, i18n } = useTranslation()
   if (loading) return <div className="container auth-loading" aria-live="polite">{t('ui.loading')}</div>
   if (role === 'GUEST') return <Navigate to="/admin/login" replace />
-  if (role !== 'ADMIN') return <div className="container auth-page"><div className="auth-card"><div className="form-alert" role="alert">{t('messages.PAGE_403')}</div></div></div>
+  if (role !== 'ADMIN') return <div className="container auth-page"><div className="auth-card"><div className="form-alert" role="alert">{t('messages.PAGE_403')}</div><Link className="ui-button ui-button-secondary" to={`/${i18n.language}`}>{t('nav.home')}</Link></div></div>
   return <Outlet />
 }

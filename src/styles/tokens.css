@@ -70,6 +70,6 @@ html[lang='ar'] {
   --font-body: var(--font-arabic-body);
 }
 
-@media (max-width: 40rem) {
-  :root { --section-y: 64px; }
+@media (--mobile) {
+  :root { --section-y: clamp(3rem, 12vw, 4rem); }
 }

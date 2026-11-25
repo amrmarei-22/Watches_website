@@ -236,7 +236,7 @@ export function ManualPaymentSection({
           type="file"
           id="receipt-file-input"
           className="receipt-file-input-hidden"
-          accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+          accept="image/*"
           disabled={disabled}
           onChange={(e) => handleFileProcess(e.target.files?.[0])}
         />

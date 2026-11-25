@@ -19,11 +19,14 @@ export function StoreLayout() {
   const authState = useAuthState()
   const cart = useCart()
   const drawerRef = useRef<HTMLElement>(null)
+  const mobileMenuRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const accountMenuRef = useRef<HTMLDetailsElement>(null)
   const [scrolled, setScrolled] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuPath, setMenuPath] = useState<string | null>(null)
   const lang = i18n.language as i18nLanguage
+  const menuOpen = menuPath === location.pathname
   const targetLanguage = lang === 'ar' ? 'en' : 'ar'
   const targetLanguageName = t(`nav.language${targetLanguage === 'ar' ? 'Arabic' : 'English'}`)
   const isHome = location.pathname === `/${lang}` || location.pathname === `/${lang}/`
@@ -63,12 +66,12 @@ export function StoreLayout() {
   )
   const mobileAccountMenu = isCustomer ? (
     <>
-      <NavLink to={`/${lang}/account`} end onClick={() => setMenuOpen(false)} className="store-link">{t('pages.account')}</NavLink>
-      <NavLink to={`/${lang}/account/orders`} end onClick={() => setMenuOpen(false)} className="store-link">{t('pages.orders')}</NavLink>
-      <button type="button" className="store-link account-logout" onClick={() => { setMenuOpen(false); void authState.signOut() }}>{t('nav.logout')}</button>
+      <NavLink to={`/${lang}/account`} end onClick={() => setMenuPath(null)} className="store-link">{t('pages.account')}</NavLink>
+      <NavLink to={`/${lang}/account/orders`} end onClick={() => setMenuPath(null)} className="store-link">{t('pages.orders')}</NavLink>
+      <button type="button" className="store-link account-logout" onClick={() => { setMenuPath(null); void authState.signOut() }}>{t('nav.logout')}</button>
     </>
   ) : (
-    <NavLink to={accountHref} end onClick={() => setMenuOpen(false)} className="store-link">{accountLabel}</NavLink>
+    <NavLink to={accountHref} end onClick={() => setMenuPath(null)} className="store-link">{accountLabel}</NavLink>
   )
   const contactItems = [
     businessConfig.contact.whatsapp ? <a key="whatsapp" className="store-link" href={`https://wa.me/${businessConfig.contact.whatsapp}`}>{t('footer.whatsapp')}: {businessConfig.contact.whatsapp}</a> : null,
@@ -83,6 +86,45 @@ export function StoreLayout() {
       navigate(`/${lang}/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`, { replace: true })
     }
   }, [authState.authError, lang, location.pathname, location.search, navigate])
+  useEffect(() => {
+    if (!menuOpen) return
+    const root = document.documentElement
+    const previousScrollLock = root.getAttribute('data-scroll-locked')
+    root.dataset.scrollLocked = 'true'
+    const focusable = () => [...(mobileMenuRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? [])]
+    window.requestAnimationFrame(() => focusable()[0]?.focus({ preventScroll: true }))
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setMenuPath(null)
+        menuButtonRef.current?.focus({ preventScroll: true })
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      if (!items.length) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (!items.includes(document.activeElement as HTMLElement)) {
+        event.preventDefault()
+        ;(event.shiftKey ? last : first).focus()
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      if (previousScrollLock === null) delete root.dataset.scrollLocked
+      else root.setAttribute('data-scroll-locked', previousScrollLock)
+    }
+  }, [menuOpen])
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
       const menu = accountMenuRef.current
@@ -125,7 +167,7 @@ export function StoreLayout() {
       <header className={`store-header ${scrolled ? 'is-scrolled' : ''} ${isHome ? 'is-home' : 'is-inner-page'}`}>
         <div className="container store-header-inner">
           <div className="header-brand-nav">
-            <Link to={`/${lang}`} className="logo-link" onClick={() => setMenuOpen(false)}><Logo /></Link>
+            <Link to={`/${lang}`} className="logo-link" onClick={() => setMenuPath(null)}><Logo /></Link>
             <nav className="desktop-nav" aria-label={t('nav.main')}>
               <NavLink to={`/${lang}`} end className="store-link">{t('nav.home')}</NavLink>
               <NavLink to={`/${lang}/shop`} end className="store-link">{t('nav.shop')}</NavLink>
@@ -136,20 +178,22 @@ export function StoreLayout() {
             {accountMenu}
             <NavLink to={`/${lang}/cart`} end className="icon-button cart-link" aria-label={t('nav.cartItems', { count: cart.count })} title={t('nav.cartItems', { count: cart.count })}><ShoppingBag aria-hidden="true" /><span className="icon-label">{t('nav.cart')}</span>{getCartBadgeCount(cart.count) && <span className="cart-count" aria-hidden="true">{getCartBadgeCount(cart.count)}</span>}</NavLink>
             <button className="language-switch" lang={targetLanguage} aria-label={t('nav.switchLanguage', { language: targetLanguageName })} onClick={switchLanguage}>{targetLanguageName}</button>
-            <button className="menu-button icon-button" onClick={() => setMenuOpen((open) => !open)} aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={t('nav.menu')} title={t('nav.menu')}><Menu aria-hidden="true" /></button>
+            <button ref={menuButtonRef} className="menu-button icon-button" onClick={() => setMenuPath(menuOpen ? null : location.pathname)} aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? t('ui.close') : t('nav.menu')} title={menuOpen ? t('ui.close') : t('nav.menu')}><Menu aria-hidden="true" /></button>
           </div>
         </div>
-        {menuOpen && <nav id="mobile-menu" className="mobile-menu" aria-label={t('nav.main')}>
-          <NavLink to={`/${lang}`} end onClick={() => setMenuOpen(false)} className="store-link">{t('nav.home')}</NavLink>
-          <NavLink to={`/${lang}/shop`} end onClick={() => setMenuOpen(false)} className="store-link">{t('nav.shop')}</NavLink>
-          {mobileAccountMenu}
-          <button type="button" className="store-link mobile-language" lang={targetLanguage} onClick={() => { setMenuOpen(false); void switchLanguage() }}>{targetLanguageName}</button>
-        </nav>}
+        {menuOpen && <div className="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label={t('nav.main')} onMouseDown={(event) => { if (event.target === event.currentTarget) setMenuPath(null) }}>
+          <nav ref={mobileMenuRef} id="mobile-menu" className="mobile-menu" aria-label={t('nav.main')}>
+            <NavLink to={`/${lang}`} end onClick={() => setMenuPath(null)} className="store-link">{t('nav.home')}</NavLink>
+            <NavLink to={`/${lang}/shop`} end onClick={() => setMenuPath(null)} className="store-link">{t('nav.shop')}</NavLink>
+            {mobileAccountMenu}
+            <button type="button" className="store-link mobile-language" lang={targetLanguage} onClick={() => { setMenuPath(null); void switchLanguage() }}>{targetLanguageName}</button>
+          </nav>
+        </div>}
         <span className="scroll-progress" aria-hidden="true" style={{ transform: `scaleX(${scrollProgress})` }} />
       </header>
       {cart.drawerOpen && <aside ref={drawerRef} className="cart-drawer" aria-label={t('pages.cart')} role="dialog"><div className="cart-drawer-header"><h2>{t('pages.cart')}</h2><button type="button" onClick={cart.closeDrawer} aria-label={t('ui.close')}>{t('ui.close')}</button></div>{cart.items.map((item) => <div className="cart-drawer-line" key={item.product.id}><img src={getProductImageUrl(item.product.images[0]?.path ?? '')} alt="" /><span>{lang === 'ar' ? item.product.nameAr : item.product.nameEn}</span><span>{item.quantity}</span></div>)}<Link className="ui-button ui-button-primary" to={`/${lang}/cart`} onClick={cart.closeDrawer}>{t('pages.cart')}</Link></aside>}
       {cart.added && <Toast>{t('messages.CART_ADDED')}</Toast>}
-      <main>{authState.authError === 'AUTH_DISABLED' && <div className="container form-alert" role="alert">{t('messages.AUTH_DISABLED')}</div>}{authState.authError === 'AUTH_SESSION_EXPIRED' && <div className="container form-alert" role="alert">{t('messages.AUTH_SESSION_EXPIRED')}</div>}<Outlet /></main>
+      <main id="main-content" data-scroll-container="store-main" tabIndex={-1}>{authState.authError === 'AUTH_DISABLED' && <div className="container form-alert" role="alert">{t('messages.AUTH_DISABLED')}</div>}{authState.authError === 'AUTH_SESSION_EXPIRED' && <div className="container form-alert" role="alert">{t('messages.AUTH_SESSION_EXPIRED')}</div>}<Outlet /></main>
       <footer className={`store-footer ${focusFooter ? 'store-footer-slim' : ''}`}>
         {focusFooter ? <div className="container footer-slim-row"><Logo /><span>© {new Date().getFullYear()} {lang === 'ar' ? brand.nameAr : brand.nameEn} — {t('chrome.footer.rights')}</span></div> : <><div className="container footer-grid">
           <section className="footer-group footer-brand"><Logo />{(lang === 'ar' ? brand.taglineAr : brand.taglineEn) && <p>{lang === 'ar' ? brand.taglineAr : brand.taglineEn}</p>}</section>

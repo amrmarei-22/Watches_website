@@ -3,6 +3,10 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: { drafts: { customMedia: true } },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/testSetup.ts'],

@@ -10,6 +10,7 @@ import { HomePage, ListingPage, ProductPage } from './pages/CatalogPages'
 import { CartPage } from './pages/CartPage'
 import { OrdersPage, OrderDetailsPage } from './pages/OrderPages'
 import { StaticPage } from './pages/StaticPage'
+import { ScrollManager } from './components/ScrollManager'
 
 const AdminApp = lazy(() => import('./admin/AdminApp').then((module) => ({ default: module.AdminApp })))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPages').then((module) => ({ default: module.CheckoutPage })))
@@ -63,5 +64,5 @@ function LocalizedRoutes() {
 }
 
 export default function App() {
-  return <BrowserRouter><Routes><Route path="/:lang/*" element={<LocalizedRoutes />} /><Route path="/admin/login" element={<LoginPage admin />} /><Route element={<RequireAdmin />}><Route path="/admin/*" element={<Suspense fallback={<LoadingFallback />}><AdminApp /></Suspense>} /></Route><Route path="*" element={<Navigate to="/ar" replace />} /></Routes></BrowserRouter>
+  return <BrowserRouter><ScrollManager /><Routes><Route path="/:lang/*" element={<LocalizedRoutes />} /><Route path="/admin/login" element={<LoginPage admin />} /><Route element={<RequireAdmin />}><Route path="/admin/*" element={<Suspense fallback={<LoadingFallback />}><AdminApp /></Suspense>} /></Route><Route path="*" element={<Navigate to="/ar" replace />} /></Routes></BrowserRouter>
 }

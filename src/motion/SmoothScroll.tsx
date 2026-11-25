@@ -12,7 +12,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     let lenis: { raf: (time: number) => void; destroy: () => void; stop: () => void; start: () => void } | undefined
     let frame = 0
     let cancelled = false
-    const isScrollPaused = () => Boolean(document.querySelector('[role="dialog"], .cart-drawer, .filter-drawer'))
+    const isScrollPaused = () => Boolean(document.querySelector('[role="dialog"], .cart-drawer, .filter-drawer, .mobile-menu-overlay'))
     const onDialogChange = () => {
       const paused = isScrollPaused()
       if (paused) {
@@ -38,18 +38,12 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       }
       frame = requestAnimationFrame(raf)
     })
-    const onFocus = (event: FocusEvent) => {
-      const target = event.target
-      if (target instanceof HTMLElement) target.scrollIntoView({ block: 'nearest' })
-    }
-    document.addEventListener('focusin', onFocus)
     return () => {
       cancelled = true
       cancelAnimationFrame(frame)
       lenis?.destroy()
       delete document.documentElement.dataset.lenisActive
       observer.disconnect()
-      document.removeEventListener('focusin', onFocus)
     }
   }, [reducedMotion, location.pathname])
 

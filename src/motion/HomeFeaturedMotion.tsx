@@ -15,7 +15,7 @@ export function HomeFeaturedMotion({ products }: { products: Product[] }) {
   const { i18n, t } = useTranslation()
   const lang = i18n.language as i18nLanguage
   const reduced = useReducedMotion()
-  const animate = typeof window !== 'undefined' && shouldAnimate({ reducedMotion: reduced, width: window.innerWidth })
+  const [animate, setAnimate] = useState(() => typeof window !== 'undefined' && shouldAnimate({ reducedMotion: reduced, width: window.innerWidth }))
   const scope = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const activeIndexRef = useRef(0)
@@ -48,11 +48,17 @@ export function HomeFeaturedMotion({ products }: { products: Product[] }) {
   }, { scope, dependencies: [animate, products.length, i18n.language] })
 
   useEffect(() => {
-    const onResize = () => {
-      if (!shouldAnimate({ reducedMotion: reduced, width: window.innerWidth })) setActiveIndex(0)
+    const updateLayout = () => {
+      const nextAnimate = shouldAnimate({ reducedMotion: reduced, width: window.innerWidth })
+      setAnimate(nextAnimate)
+      if (!nextAnimate) {
+        activeIndexRef.current = 0
+        setActiveIndex(0)
+      }
     }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    updateLayout()
+    window.addEventListener('resize', updateLayout)
+    return () => window.removeEventListener('resize', updateLayout)
   }, [reduced])
 
   const scrollToIndex = (index: number) => {
