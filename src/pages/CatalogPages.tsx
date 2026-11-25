@@ -21,7 +21,7 @@ import { useReducedMotion } from '../motion/useReducedMotion'
 import { stagger } from '../motion/presets'
 import { lazy, Suspense } from 'react'
 import { getBrands, getFeaturedProducts, getLatestProductByGender, getNewArrivals, homeGenders } from '../features/catalog/homeLogic'
-import { HeroDial } from '../components/HeroDial'
+import { HeroWatch } from '../components/HeroWatch'
 import { MotionDebugHud } from '../motion/MotionDebugHud'
 import { markEntranceSeen, shouldRunEntrance } from '../motion/entrance'
 import { shouldAnimate } from '../motion/featuredHelpers'
@@ -189,7 +189,7 @@ export function HomePage() {
         .fromTo(hero.querySelector('.hero-copy h1'), { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.7 })
         .fromTo(hero.querySelector('.hero-copy p'), { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.42')
         .fromTo(hero.querySelector('.hero-copy .ui-button'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55 }, '-=0.32')
-      const watch = hero.querySelector<HTMLElement>('.home-hero-watch, .hero-dial')
+      const watch = hero.querySelector<HTMLElement>('.home-hero-watch')
       if (watch) gsap.to(watch, { y: -8, duration: 3.8, ease: 'sine.inOut', repeat: -1, yoyo: true })
       cleanup = () => {
         timeline.kill()
@@ -213,7 +213,7 @@ export function HomePage() {
   const newArrivals = getNewArrivals(data)
   const brands = getBrands(data)
   const genderTiles = homeGenders.map((gender) => ({ gender, product: getLatestProductByGender(data, gender) })).filter((item): item is { gender: typeof item.gender; product: Product } => item.product !== undefined)
-  const heroVisual = !heroPath || heroPath.startsWith('/placeholders/') ? <HeroDial /> : <img className="home-hero-watch" src={getProductImageUrl(heroPath)} width="800" height="1000" loading="eager" alt={featured[0] ? (lang === 'ar' ? featured[0].nameAr : featured[0].nameEn) : t('home.heroVisualAlt')} />
+  const heroVisual = !heroPath || heroPath.startsWith('/placeholders/') ? <HeroWatch /> : <img className="home-hero-watch" src={getProductImageUrl(heroPath)} width="800" height="1000" loading="eager" alt={featured[0] ? (lang === 'ar' ? featured[0].nameAr : featured[0].nameEn) : t('home.heroVisualAlt')} />
   return <section className="home-page">
     <div className="container home-hero motion-reveal" data-direction={direction} data-reduced={reduced}><div className="hero-copy"><h1 className="page-heading"><span className="hero-headline-mask"><span>{t('home.heroHeadline')}</span></span></h1><p>{t('home.heroSubtitle')}</p><Link className="ui-button ui-button-primary" to={`/${lang}/shop`}>{t('chrome.cta.shopWatches')}</Link></div><div className="hero-visual">{heroVisual}</div><span className={`scroll-cue ${showScrollCue ? '' : 'is-hidden'}`} aria-hidden="true">↓</span></div>
     {featured.length > 0 && <div className="container home-section home-entrance-item"><div className="section-heading"><h2>{t('chrome.home.featured')}</h2><Link to={`/${lang}/shop`}>{t('chrome.cta.viewAll')}</Link></div><Suspense fallback={<div className="product-grid">{featured.slice(0, 12).map((product) => <ProductCard key={product.id} product={product} />)}</div>}><div ref={showcaseRef}><HomeFeaturedMotion products={featured} /></div></Suspense><MotionDebugHud showcase={showcaseRef.current} /></div>}

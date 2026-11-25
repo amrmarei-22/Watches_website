@@ -58,6 +58,10 @@
     "resendLink": "Resend link",
     "reload": "Reload"
   },
+  "admin": {
+    "rejectionReasonHint": "Enter a reason with at least 3 characters.",
+    "rejectionReasonCount": "{{count}} / 500"
+  },
   "validation": {
     "required": "{{field}} is required.",
     "email": "Enter a valid email address.",

@@ -26,6 +26,15 @@ export type OrderStatus = (typeof orderStatuses)[number]
 export const paymentMethods = ['COD', 'MANUAL'] as const
 export type PaymentMethod = (typeof paymentMethods)[number]
 
+export const paymentStatuses = [
+  'awaiting_payment',
+  'under_review',
+  'paid',
+  'rejected',
+  'refunded',
+] as const
+export type PaymentStatus = (typeof paymentStatuses)[number]
+
 export interface ProductSpecs {
   caseSize: number
   movement: string

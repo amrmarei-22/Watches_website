@@ -33,7 +33,7 @@ Rule for Copilot: when a task touches a **[BLOCKER]** row, ask the owner. When i
 | 25 | Localized product content | [DEFAULT] | name/description required in both Arabic and English. |
 | 26 | Spec enumerations (movement, material, strap, gender) | [DEFAULT] | Values listed in `i18n/en.json`. Owner may add/remove. |
 | 27 | Real product photos | [DEFAULT] | Using generated SAMPLE placeholders (`public/placeholders/watch-1..6.svg`). Replace via admin upload / Storage when real photos exist. |
-| 28 | Brand name & logo | [DEFAULT] | Working name **Vintage / فينتج** with the V-hands logo in `public/brand/`. Owner may rename at any time: change `src/config/brand.ts` (single source). |
+| 28 | Brand name & logo | [DEFAULT] | Working name **Vintage / فينتچ** with the V-hands logo in `public/brand/`. Owner may rename at any time: change `src/config/businessConfig.ts` (single source). |
 | 29 | Hosting for frontend (Vercel / Netlify / Cloudflare Pages) | OPEN | Owner choice; no code impact. |
 | 30 | Supabase project & keys | **[OWNER ACTION]** | Owner creates the project and fills `.env.local` (see `supabase/README.md`). Copilot must not invent keys. |
 | 30 | Contact details (WhatsApp, phone, email, hours, Instagram/Facebook) | **[OWNER INPUT]** | Empty in `businessConfig.contact`; UI hides empty items. Needed before launch. |

@@ -1,0 +1,205 @@
+.hero-watch-float {
+  width: min(80vw, 560px);
+  margin: 0;
+  animation: hero-watch-float 5.2s ease-in-out infinite;
+}
+
+.hero-watch-tilt {
+  transform: perspective(1100px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 350ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.hero-watch {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  direction: ltr;
+}
+
+.hero-watch-glow {
+  fill: var(--accent);
+  opacity: .08;
+  filter: blur(28px);
+  animation: hero-watch-glow 5s ease-in-out infinite;
+}
+
+.hero-watch-bezel {
+  opacity: 0;
+  transform: scale(.9);
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+
+.hero-watch-crown {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.hero-watch-tick {
+  fill: var(--accent);
+  opacity: 0;
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.hero-watch-hour-markers path:first-child {
+  fill: var(--accent);
+}
+
+.hero-watch-marker-highlight {
+  fill: none;
+  stroke: #f1dfb6;
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: .75;
+}
+
+.hero-watch-dial-copy {
+  fill: var(--text);
+  font: 600 18px var(--font-display);
+  letter-spacing: .22em;
+  opacity: 0;
+}
+
+.hero-watch-automatic {
+  fill: var(--text-muted);
+  font: 500 9px var(--font-body);
+  letter-spacing: .2em;
+}
+
+.hero-watch-hand {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+
+.hero-watch-hour-hand,
+.hero-watch-minute-hand {
+  fill: var(--text);
+}
+
+.hero-watch-hour-hand .hero-watch-hand-inlay,
+.hero-watch-minute-hand .hero-watch-hand-inlay {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: .8;
+}
+
+.hero-watch-second-hand {
+  fill: var(--accent);
+}
+
+.hero-watch-second-hand circle {
+  fill: var(--accent);
+  stroke: var(--surface-2);
+  stroke-width: 2;
+}
+
+.hero-watch-hand.is-settling {
+  transition: transform 900ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.hero-watch-glint {
+  opacity: 0;
+  transform: translateX(-440px) rotate(25deg);
+  transform-origin: center;
+}
+
+.hero-watch-center-ring {
+  fill: var(--accent);
+  stroke: #f1dfb6;
+  stroke-width: 1.5;
+}
+
+.hero-watch-center-cap {
+  fill: var(--accent-contrast);
+}
+
+.hero-watch-float.is-entering .hero-watch-bezel {
+  animation: hero-watch-bezel-in 1.25s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+.hero-watch-float.is-entering .hero-watch-tick {
+  animation: hero-watch-tick-in 480ms cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+.hero-watch-float.is-entering .hero-watch-dial-copy {
+  animation: hero-watch-copy-in 500ms ease-out 450ms forwards;
+}
+
+.hero-watch-float.is-entering .hero-watch-glint {
+  animation: hero-watch-glint 8s ease-in-out 1.4s infinite;
+}
+
+@keyframes hero-watch-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes hero-watch-glow {
+  0%, 100% { opacity: .06; }
+  50% { opacity: .15; }
+}
+
+@keyframes hero-watch-bezel-in {
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes hero-watch-tick-in {
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes hero-watch-copy-in {
+  to { opacity: 1; }
+}
+
+@keyframes hero-watch-glint {
+  0%, 10% { opacity: 0; transform: translateX(-440px) rotate(25deg); }
+  22% { opacity: .52; }
+  52% { opacity: .12; transform: translateX(440px) rotate(25deg); }
+  58%, 100% { opacity: 0; transform: translateX(440px) rotate(25deg); }
+}
+
+@media (max-width: 40rem) {
+  .hero-watch-float { width: min(80vw, 360px); }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .hero-watch-tilt { transform: none; transition: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-watch-float,
+  .hero-watch-glow,
+  .hero-watch-float.is-entering .hero-watch-bezel,
+  .hero-watch-float.is-entering .hero-watch-tick,
+  .hero-watch-float.is-entering .hero-watch-dial-copy,
+  .hero-watch-float.is-entering .hero-watch-glint {
+    animation: none;
+  }
+
+  .hero-watch-tilt,
+  .hero-watch-hand,
+  .hero-watch-hand.is-settling {
+    transition: none;
+    transform: none;
+  }
+
+  .hero-watch-bezel,
+  .hero-watch-dial-copy {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-watch-tick {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-watch-glint { display: none; }
+}

@@ -104,7 +104,7 @@ Short, calm, confident microcopy. Messages are only those in `docs/i18n`. New ma
 LCP < 2.5s on mid-range mobile; hero image preloaded, responsive `srcset`; code-split routes (admin chunk separate); GSAP/ScrollTrigger loaded only on pages that use it.
 
 ## 10. Brand (working identity — owner may change)
-- Name: **Vintage** (Arabic: **فينتج**). Defined once in `src/config/brand.ts` `{ name: {en:'Vintage', ar:'فينتج'}, tagline: null }`. Never hard-code the name elsewhere.
+- Name: **Vintage** (Arabic: **فينتچ**). Defined once in `src/config/businessConfig.ts` as `brand.nameEn` / `brand.nameAr`. Never hard-code the name elsewhere.
 - Logo mark: `public/brand/logo-mark.svg` (gold ring with V-shaped watch hands). Favicon: `public/brand/favicon.svg` (update `index.html` to use it).
 - Header lockup: mark (32px) + wordmark in the display font (Cormorant Garamond for EN / Amiri for AR), uppercase letter-spacing .18em for EN only, accent color for the mark, `--text` for the wordmark.
 - Tagline: none until the owner provides one (do not invent).

@@ -21,18 +21,20 @@ export const businessConfig = {
   maxImageMb: 5,
   maxAddressesPerUser: 5,
   manualPayment: {
-    account: '01000000000',
-    bucket: 'receipts',
+    instapayAddress: import.meta.env.VITE_PAYMENT_INSTAPAY_ADDRESS || '',
+    walletNumber: import.meta.env.VITE_PAYMENT_WALLET_NUMBER || '',
+    account: '',
+    bucket: 'payment-proofs',
     maxReceiptMb: 5,
   },
   brand: {
     nameEn: 'Vintage',
-    nameAr: 'فينتج',
+    nameAr: 'فينتچ',
     taglineEn: '',
     taglineAr: '',
   },
   contact: {
-    whatsapp: '',
+    whatsapp: import.meta.env.VITE_WHATSAPP_NUMBER || '',
     phone: '',
     email: '',
     hoursEn: '',
@@ -61,7 +63,12 @@ export const PASSWORD_RESET_TTL_MINUTES =
 export const MAX_IMAGES_PER_PRODUCT = businessConfig.maxImagesPerProduct
 export const MAX_IMAGE_MB = businessConfig.maxImageMb
 export const MAX_ADDRESSES_PER_USER = businessConfig.maxAddressesPerUser
-export const MANUAL_PAYMENT_ACCOUNT = businessConfig.manualPayment.account
+export const PAYMENT_INSTAPAY_ADDRESS =
+  businessConfig.manualPayment.instapayAddress
+export const PAYMENT_WALLET_NUMBER =
+  businessConfig.manualPayment.walletNumber
+export const MANUAL_PAYMENT_ACCOUNT =
+  PAYMENT_INSTAPAY_ADDRESS || PAYMENT_WALLET_NUMBER
 export const RECEIPTS_BUCKET = businessConfig.manualPayment.bucket
 export const MAX_RECEIPT_MB = businessConfig.manualPayment.maxReceiptMb
 export const brand = businessConfig.brand

@@ -38,6 +38,10 @@ export function checkoutErrorMessage(error: { message?: string } | null): string
     'RECEIPT_INVALID_TYPE',
     'RECEIPT_MAX_SIZE',
     'RECEIPT_UPLOAD_FAILED',
+    'PAYMENT_ALREADY_SUBMITTED',
+    'PAYMENT_UPLOAD_LIMIT',
+    'INVALID_RECEIPT_PATH',
+    'REASON_REQUIRED',
   ]
   return error?.message && known.includes(error.message) ? error.message : 'CHECKOUT_ERROR'
 }

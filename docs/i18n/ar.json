@@ -58,6 +58,10 @@
     "resendLink": "إعادة إرسال الرابط",
     "reload": "إعادة التحميل"
   },
+  "admin": {
+    "rejectionReasonHint": "أدخل سببًا لا يقل عن 3 أحرف.",
+    "rejectionReasonCount": "{{count}} / 500"
+  },
   "validation": {
     "required": "{{field}} مطلوب.",
     "email": "أدخل بريدًا إلكترونيًا صحيحًا.",

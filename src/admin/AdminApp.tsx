@@ -7,7 +7,7 @@ import { useAuthState } from '../hooks/useAuthState'
 import { getAvailability } from '../domain/inventory'
 import { allowedProductActions, parsePriceToPiasters } from '../domain/productAdmin'
 import { productSchema } from '../domain/schemas'
-import { LOW_STOCK_THRESHOLD_DEFAULT, MAX_IMAGES_PER_PRODUCT, MAX_IMAGE_MB } from '../config/businessConfig'
+import { LOW_STOCK_THRESHOLD_DEFAULT, MAX_IMAGES_PER_PRODUCT, MAX_IMAGE_MB, brand } from '../config/businessConfig'
 import type { Availability, ProductStatus } from '../domain/types'
 import { Dashboard as OperationsDashboard, Orders as AdminOrders, OrderDetails, Users as AdminUsers, UserDetails, AuditTrail } from './AdminOperations'
 import { ProductEditPage } from './ProductEditPage'
@@ -33,7 +33,7 @@ function PageTitle({ children, action }: { children: ReactNode; action?: ReactNo
 export function AdminLayout() {
   const { t, i18n } = useTranslation(); const { signOut } = useAuthState()
   const nav = [{ to: '/admin', key: 'dashboard' }, { to: '/admin/products', key: 'products' }, { to: '/admin/inventory', key: 'inventory' }, { to: '/admin/orders', key: 'orders' }, { to: '/admin/users', key: 'users' }, { to: '/admin/audit', key: 'audit' }]
-  return <div className="admin-shell"><aside className="admin-sidebar"><Link to="/admin" className="admin-brand">Vintage</Link><nav aria-label={t('admin.navigation')}>{nav.map((item) => <NavLink key={item.to} end={item.to === '/admin'} to={item.to}>{t(`admin.${item.key}`)}</NavLink>)}</nav><div className="admin-sidebar-actions"><button onClick={() => void setLanguage(i18n.language === 'ar' ? 'en' : 'ar')}>{i18n.language === 'ar' ? 'English' : 'العربية'}</button><button onClick={() => void signOut()}>{t('admin.logout')}</button></div></aside><main className="admin-main"><Outlet /></main></div>
+  return <div className="admin-shell"><aside className="admin-sidebar"><Link to="/admin" className="admin-brand">{i18n.language === 'ar' ? brand.nameAr : brand.nameEn}</Link><nav aria-label={t('admin.navigation')}>{nav.map((item) => <NavLink key={item.to} end={item.to === '/admin'} to={item.to}>{t(`admin.${item.key}`)}</NavLink>)}</nav><div className="admin-sidebar-actions"><button onClick={() => void setLanguage(i18n.language === 'ar' ? 'en' : 'ar')}>{i18n.language === 'ar' ? 'English' : 'العربية'}</button><button onClick={() => void signOut()}>{t('admin.logout')}</button></div></aside><main className="admin-main"><Outlet /></main></div>
 }
 
 function Placeholder({ title }: { title: string }) { return <section className="admin-page"><PageTitle>{title}</PageTitle><div className="admin-card"><p>{useTranslation().t('admin.placeholder')}</p></div></section> }

@@ -15,6 +15,7 @@ import {
   validateReceiptFile,
 } from '../features/checkoutLogic'
 import { MAX_RECEIPT_MB } from '../config/businessConfig'
+import { businessConfig } from '../config/businessConfig'
 
 export interface ManualPaymentSectionProps {
   accountNumber: string
@@ -23,6 +24,10 @@ export interface ManualPaymentSectionProps {
   disabled?: boolean
   errorMessage?: string | null
   onClearError?: () => void
+  senderInfo?: string
+  onSenderInfoChange?: (value: string) => void
+  orderNumber?: string
+  totalPiasters?: number
 }
 
 export function ManualPaymentSection({
@@ -32,6 +37,10 @@ export function ManualPaymentSection({
   disabled = false,
   errorMessage,
   onClearError,
+  senderInfo = '',
+  onSenderInfoChange,
+  orderNumber,
+  totalPiasters,
 }: ManualPaymentSectionProps) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
@@ -122,6 +131,12 @@ export function ManualPaymentSection({
   }
 
   const activeError = localError || errorMessage
+  const whatsappNumber = businessConfig.contact.whatsapp
+  const whatsappHref = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        `${orderNumber ? `${orderNumber} ` : ''}${typeof totalPiasters === 'number' ? `${(totalPiasters / 100).toFixed(2)} EGP` : ''}`,
+      )}`
+    : null
 
   return (
     <div className="manual-payment-wrapper">
@@ -171,6 +186,16 @@ export function ManualPaymentSection({
             )}
           </button>
         </div>
+        {whatsappHref && (
+          <a
+            className="manual-whatsapp-link"
+            href={whatsappHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t('checkout.contactWhatsApp')}
+          </a>
+        )}
       </section>
 
       {/* 2. Receipt Upload Card */}
@@ -189,6 +214,20 @@ export function ManualPaymentSection({
             <AlertCircle size={16} aria-hidden="true" />
             <span>{activeError}</span>
           </div>
+        )}
+
+        {onSenderInfoChange && (
+          <label className="ui-field">
+            <span className="ui-label">{t('checkout.senderInfo')}</span>
+            <input
+              type="text"
+              maxLength={80}
+              value={senderInfo}
+              disabled={disabled}
+              onChange={(event) => onSenderInfoChange(event.target.value)}
+              placeholder={t('checkout.senderInfoPlaceholder')}
+            />
+          </label>
         )}
 
         {/* Hidden File Input */}

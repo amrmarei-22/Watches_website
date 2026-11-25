@@ -1,6 +1,6 @@
 <div align="center">
 
-# Vintage
+# Vintage / فينتچ
 
 **A bilingual (Arabic RTL / English LTR) luxury watch store built with React and Supabase.**
 
@@ -153,6 +153,9 @@ Create `.env.local` in the project root. It is ignored by Git.
 ```env
 VITE_SUPABASE_URL=your-project-url
 VITE_SUPABASE_ANON_KEY=your-anon-or-publishable-key
+VITE_PAYMENT_INSTAPAY_ADDRESS=your-instalpay-address
+VITE_PAYMENT_WALLET_NUMBER=your-wallet-number
+VITE_WHATSAPP_NUMBER=2010xxxxxxxx
 ```
 
 You can find both values in Supabase under **Project Settings, API**.
@@ -186,6 +189,9 @@ update public.app_settings set shipping_flat_fee = 5000 where id = 1;
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | Yes | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon (publishable) key |
+| `VITE_PAYMENT_INSTAPAY_ADDRESS` | For manual payment | InstaPay address shown at checkout |
+| `VITE_PAYMENT_WALLET_NUMBER` | For manual payment | Mobile wallet number shown at checkout |
+| `VITE_WHATSAPP_NUMBER` | Optional | International-format WhatsApp number without `+` |
 
 Business constants (low-stock threshold, per-line quantity limit, session timeouts, brand name, contact details) are defined in a single file, `src/config/businessConfig.ts`. The matching database constants live in the `app_settings` table.
 

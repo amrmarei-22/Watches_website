@@ -138,17 +138,6 @@ html[data-scroll-locked='true'] { overflow: hidden; }
 .featured-showcase.is-fallback .featured-showcase-panel { grid-area: auto; opacity: 1; pointer-events: auto; transform: none; }
 .featured-showcase.is-fallback .showcase-controls { order: 99; }
 .hero-visual { display: grid; place-items: center; }
-.hero-dial { width: min(80vw, 560px); height: auto; }
-.hero-dial-glow { fill: var(--accent); opacity: .15; }
-.hero-dial-ticks line { stroke: var(--accent); stroke-width: 2; }
-.hero-dial-markers rect { fill: var(--accent); }
-.hero-dial text { fill: var(--text); font: 600 18px var(--font-display); letter-spacing: .25em; }
-.hero-dial-automatic { font-size: 10px !important; letter-spacing: .15em !important; fill: var(--text-muted) !important; }
-.hero-dial-hand, .hero-dial-second, .hero-dial-crown { transform-box: view-box; transform-origin: 280px 280px; }
-.hero-dial-hour rect, .hero-dial-minute rect { fill: var(--text); }
-.hero-dial-second { fill: var(--accent); }
-.hero-dial-crown { fill: var(--surface-2); stroke: var(--accent); stroke-width: 3; }
-.hero-dial-crown line { stroke: var(--accent); stroke-width: 3; }
 @media (hover: none) { .product-card:hover .product-card-image img { transform: none; } .product-card:hover .product-card-image img + img { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .motion-reveal[data-revealed='false'], .motion-reveal { opacity: 1; transform: none; transition: none; } .home-hero .hero-copy h1, .home-hero .hero-copy p, .home-hero .hero-copy .ui-button { opacity: 1; transform: none; } .product-card-image img { transition: none; } .featured-showcase-panel { opacity: 1; pointer-events: auto; transform: none; transition: none; } .featured-showcase-sticky { position: static; display: grid; gap: var(--space-4); min-height: auto; } .scroll-cue { animation: none; } }
 @media (prefers-reduced-motion: reduce) { .cart-drawer { animation: none; } }
@@ -423,7 +412,6 @@ html[lang='ar'] .gender-tile span { letter-spacing: 0; }
   .mobile-add-bar .ui-button { width: 100%; }
   .home-hero { min-height: auto; grid-template-columns: 1fr; padding-block: var(--section-y); }
   .hero-visual { order: -1; }
-  .hero-dial { width: min(80vw, 360px); }
   .featured-showcase-panel { grid-template-columns: 1fr; min-height: auto; padding: var(--space-4); }
   .featured-showcase-image { min-height: 18rem; }
   .checkout-grid { grid-template-columns: 1fr; }

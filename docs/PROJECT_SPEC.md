@@ -27,7 +27,7 @@ User: `id, name, email (unique), phone, passwordHash, role, emailVerified, creat
 
 Address: `id, userId, fullName, phone, governorate, city, street, building, notes`.
 
-Order: `id, orderNumber, userId, status, lines[], subtotal, shippingFee, total, paymentMethod, receiptPath, shippingAddressSnapshot, statusHistory[], createdAt, updatedAt`.
+Order: `id, orderNumber, userId, status, lines[], subtotal, shippingFee, total, paymentMethod, paymentStatus, paymentProofPath, paymentSenderInfo, paymentRejectionReason, shippingAddressSnapshot, statusHistory[], createdAt, updatedAt`.
 OrderLine: `productId, skuSnapshot, nameSnapshot, unitPriceSnapshot, quantity, lineTotal`.
 StatusHistory entry: `from, to, actorId, actorRole, reason|null, timestamp`.
 

@@ -43,9 +43,11 @@ Everything else is **RPC only**.
 | `set_default_address` | `p_address_id` | void | `ADDRESS_NOT_FOUND` |
 | `place_order` | `p_idempotency_key` (uuid), `p_address_id`, `p_payment_method='COD'` | `{order_id, order_number, duplicate}` | `AUTH_VERIFY_REQUIRED`, `CART_EMPTY`, `CHECKOUT_STOCK_CONFLICT`, `CART_PRICE_CHANGED`, `ADDRESS_NOT_FOUND`, `PAYMENT_METHOD_UNSUPPORTED` |
 | `place_manual_order` | `p_idempotency_key` (uuid), `p_address_id`, `p_receipt_path` | `{order_id, order_number, duplicate}` | `AUTH_VERIFY_REQUIRED`, `RECEIPT_REQUIRED`, `CART_EMPTY`, `CHECKOUT_STOCK_CONFLICT`, `CART_PRICE_CHANGED`, `ADDRESS_NOT_FOUND` |
+| `submit_payment_proof` | `p_order_id`, `p_proof_path`, `p_sender_info?` | void | `NOT_FOUND`, `ORDER_ILLEGAL_TRANSITION`, `PAYMENT_ALREADY_SUBMITTED`, `PAYMENT_UPLOAD_LIMIT`, `INVALID_RECEIPT_PATH` |
+| `admin_reject_manual_payment` | `p_order_id`, `p_reason` | void | `REASON_REQUIRED`, `INVALID_INPUT`, `ORDER_ILLEGAL_TRANSITION`, `NOT_FOUND`, `ORDER_STATUS_CHANGED`, `FORBIDDEN` |
 | `cancel_my_order` | `p_order_id`, `p_reason?` | void | `NOT_FOUND`, `ORDER_CANCEL_TOO_LATE` |
 | `admin_transition_order` | `p_order_id`, `p_expected_from`, `p_to`, `p_reason?`, `p_tracking?` | void | `ORDER_STATUS_CHANGED`, `ORDER_ILLEGAL_TRANSITION`, `REASON_REQUIRED`, `NOT_FOUND`, `FORBIDDEN` |
-| `admin_confirm_manual_payment` | `p_order_id` | void | `ORDER_ILLEGAL_TRANSITION`, `NOT_FOUND`, `FORBIDDEN` |
+| `admin_confirm_manual_payment` | `p_order_id` | void | `ORDER_ILLEGAL_TRANSITION`, `ORDER_STATUS_CHANGED`, `NOT_FOUND`, `FORBIDDEN` |
 | `admin_transition_paid_order` | `p_order_id` | void | `ORDER_STATUS_CHANGED`, `NOT_FOUND`, `FORBIDDEN` |
 | `admin_adjust_stock` | `p_product_id`, `p_mode` (`SET`/`ADJUST`), `p_value`, `p_reason_code` (`RESTOCK`/`CORRECTION`/`DAMAGED`/`OTHER`), `p_note?` | new stock (int) | `STOCK_NEGATIVE`, `INVALID_INPUT` |
 | `admin_set_product_status` | `p_product_id`, `p_to` | void | `ILLEGAL_PRODUCT_TRANSITION`, `PRODUCT_NOT_PUBLISHABLE` |
@@ -56,7 +58,7 @@ Everything else is **RPC only**.
 | `product_availability` | `p_stock`, `p_override` | text | (mirror of `getAvailability()`; tests must assert both agree) |
 
 ## 5. Auth
-`supabase.auth.signUp({ email, password, options: { data: { name, phone }, emailRedirectTo } })` · `signInWithPassword` · `resetPasswordForEmail` · `updateUser({password})` · `signOut`. Profile row is created automatically by a DB trigger. Admin = `profiles.role = 'ADMIN'` (set manually, see `supabase/README.md`). Manual receipts use the private Storage bucket `receipts`; customers upload under `<auth.uid>/...`, while admins read through signed URLs.
+`supabase.auth.signUp({ email, password, options: { data: { name, phone }, emailRedirectTo } })` · `signInWithPassword` · `resetPasswordForEmail` · `updateUser({password})` · `signOut`. Profile row is created automatically by a DB trigger. Admin = `profiles.role = 'ADMIN'` (set manually, see `supabase/README.md`). Manual receipts use the private Storage bucket `payment-proofs`; paths start with `<order_id>/...`. Customers read their own receipts and admins read all receipts through signed URLs. The admin Storage policy calls `public.is_admin()`, which identifies admins through `profiles.role = 'ADMIN'`.
 Email verified? → `session.user.email_confirmed_at != null`.
 
 ## 6. Checkout call order

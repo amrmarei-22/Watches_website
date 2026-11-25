@@ -19,6 +19,10 @@ describe('checkout and order logic', () => {
     'RECEIPT_INVALID_TYPE',
     'RECEIPT_MAX_SIZE',
     'RECEIPT_UPLOAD_FAILED',
+    'PAYMENT_ALREADY_SUBMITTED',
+    'PAYMENT_UPLOAD_LIMIT',
+    'INVALID_RECEIPT_PATH',
+    'REASON_REQUIRED',
   ])('preserves receipt error code %s', (code) => {
     expect(checkoutErrorMessage({ message: code })).toBe(code)
   })

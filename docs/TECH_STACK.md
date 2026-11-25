@@ -34,7 +34,7 @@ Enums: `product_status(DRAFT,ACTIVE,ARCHIVED)`, `order_status(PENDING,PENDING_VE
 - `product_images(id, product_id, path, position int, is_primary bool)` (files in Storage bucket `product-images`)
 - `addresses(id, user_id, full_name, phone, governorate, city, street, building, notes, is_default)` max 5 per user (trigger)
 - `cart_items(user_id, product_id, quantity, unit_price_seen, primary key(user_id, product_id))` (no separate carts table)
-- `orders(id, order_number unique, user_id, status, subtotal, shipping_fee, total, payment_method, receipt_path null, address_snapshot jsonb, tracking_number null, idempotency_key uuid, created_at, updated_at, unique(user_id, idempotency_key))`
+- `orders(id, order_number unique, user_id, status, subtotal, shipping_fee, total, payment_method, payment_status, payment_proof_path, payment_sender_info, payment_rejection_reason, payment_submitted_at, payment_verified_at, payment_verified_by, payment_upload_count, address_snapshot jsonb, tracking_number null, idempotency_key uuid, created_at, updated_at, unique(user_id, idempotency_key))` (payment columns added by migration 007)
 - `order_lines(id, order_id, product_id, sku_snapshot, name_ar_snapshot, name_en_snapshot, unit_price_snapshot, quantity, line_total)`
 - `order_status_history(id, order_id, from_status, to_status, actor_id, actor_role, reason null, created_at)`
 - `order_admin_notes(id, order_id, admin_id, note, created_at)` append-only
